@@ -20,8 +20,8 @@ be one. It can be used in any server, event loop etc.
     Tm[K T2u
     EOF
 
-    $h->error; # check is there were any errors
-    $h->is_done; # returns 1
+    $h->error;   # Check if there were any errors
+    $h->is_done; # Returns 1
 
     # Create response
     $h->to_string; # HTTP/1.1 101 WebSocket Protocol Handshake
@@ -58,8 +58,8 @@ be one. It can be used in any server, event loop etc.
     fQJ,fN/4F4!~K~MH
     EOF
 
-    $h->error; # check is there were any errors
-    $h->is_done; # returns 1
+    $h->error;   # Check if there were any errors
+    $h->is_done; # Returns 1
 
 =head2 Parsing and constructing frames
 
