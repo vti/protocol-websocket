@@ -8,8 +8,6 @@ use base 'Protocol::WebSocket::Message';
 use Protocol::WebSocket::URL;
 use Protocol::WebSocket::Cookie::Response;
 
-use Digest::MD5 'md5';
-
 require Carp;
 
 sub new {
@@ -55,34 +53,6 @@ sub secure { @_ > 1 ? $_[0]->{secure} = $_[1] : $_[0]->{secure} }
 
 sub resource_name {
     @_ > 1 ? $_[0]->{resource_name} = $_[1] : $_[0]->{resource_name};
-}
-
-sub number1   { @_ > 1 ? $_[0]->{number1}   = $_[1] : $_[0]->{number1} }
-sub number2   { @_ > 1 ? $_[0]->{number2}   = $_[1] : $_[0]->{number2} }
-sub challenge { @_ > 1 ? $_[0]->{challenge} = $_[1] : $_[0]->{challenge} }
-
-sub checksum {
-    my $self = shift;
-    my $checksum = shift;
-
-    if (defined $checksum) {
-        $self->{checksum} = $checksum;
-        return $self;
-    }
-
-    return $self->{checksum} if defined $self->{checksum};
-
-    Carp::croak qq/number1 is required/   unless defined $self->number1;
-    Carp::croak qq/number2 is required/   unless defined $self->number2;
-    Carp::croak qq/challenge is required/ unless defined $self->challenge;
-
-    $checksum = '';
-    $checksum .= pack 'N' => $self->number1;
-    $checksum .= pack 'N' => $self->number2;
-    $checksum .= $self->challenge;
-    $checksum = md5($checksum);
-
-    return $self->{checksum} ||= $checksum;
 }
 
 sub cookies { @_ > 1 ? $_[0]->{cookies} = $_[1] : $_[0]->{cookies} }
@@ -180,7 +150,7 @@ sub to_string {
     $string .= "Connection: Upgrade\x0d\x0a";
 
     if ($self->version > 75) {
-        Carp::croak qq/host is required/ unless defined $self->host;
+        Carp::croak(qq/host is required/) unless defined $self->host;
 
         my $location = Protocol::WebSocket::URL->new(
             host          => $self->host,

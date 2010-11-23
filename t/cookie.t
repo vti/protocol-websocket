@@ -5,9 +5,6 @@ use warnings;
 
 use Test::More tests => 29;
 
-use FindBin;
-use lib "$FindBin::Bin/../lib";
-
 use_ok 'Protocol::WebSocket::Cookie';
 use_ok 'Protocol::WebSocket::Cookie::Response';
 use_ok 'Protocol::WebSocket::Cookie::Request';

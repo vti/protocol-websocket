@@ -5,9 +5,6 @@ use warnings;
 
 use Test::More tests => 105;
 
-use FindBin;
-use lib "$FindBin::Bin/../lib";
-
 use_ok 'Protocol::WebSocket::Request';
 
 my $req = Protocol::WebSocket::Request->new;

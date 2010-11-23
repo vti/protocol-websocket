@@ -5,9 +5,6 @@ use warnings;
 
 use Test::More tests => 24;
 
-use FindBin;
-use lib "$FindBin::Bin/../lib";
-
 use_ok 'Protocol::WebSocket::URL';
 
 my $url = Protocol::WebSocket::URL->new;

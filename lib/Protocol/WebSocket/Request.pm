@@ -5,7 +5,6 @@ use warnings;
 
 use base 'Protocol::WebSocket::Message';
 
-use Digest::MD5 'md5';
 use Protocol::WebSocket::Cookie::Request;
 
 require Carp;
@@ -23,8 +22,6 @@ sub new {
 }
 
 sub cookies { shift->{cookies} }
-
-sub challenge { @_ > 1 ? $_[0]->{challenge} = $_[1] : $_[0]->{challenge} }
 
 sub resource_name {
     @_ > 1 ? $_[0]->{resource_name} = $_[1] : $_[0]->{resource_name} || '/';
@@ -115,27 +112,6 @@ sub origin { shift->{fields}->{'Origin'} }
 
 sub upgrade    { shift->{fields}->{'Upgrade'} }
 sub connection { shift->{fields}->{'Connection'} }
-
-sub checksum {
-    my $self = shift;
-
-    if (@_) {
-        $self->{checksum} = shift;
-        return $self;
-    }
-
-    return $self->{checksum} if $self->{checksum};
-
-    Carp::croak qq/number1 is required/   unless defined $self->number1;
-    Carp::croak qq/number2 is required/   unless defined $self->number2;
-    Carp::croak qq/challenge is required/ unless defined $self->challenge;
-
-    my $number1 = pack 'N' => $self->number1;
-    my $number2 = pack 'N' => $self->number2;
-    my $challenge = $self->challenge;
-
-    return $self->{checksum} ||= md5 $number1 . $number2 . $challenge;
-}
 
 sub number1 { shift->_number('number1', 'key1', @_) }
 sub number2 { shift->_number('number2', 'key2', @_) }
@@ -298,14 +274,14 @@ sub to_string {
 
     my $string = '';
 
-    Carp::croak qq/resource_name is required/
+    Carp::croak(qq/resource_name is required/)
       unless defined $self->resource_name;
     $string .= "GET " . $self->resource_name . " HTTP/1.1\x0d\x0a";
 
     $string .= "Upgrade: WebSocket\x0d\x0a";
     $string .= "Connection: Upgrade\x0d\x0a";
 
-    Carp::croak qq/Host is required/ unless defined $self->host;
+    Carp::croak(qq/Host is required/) unless defined $self->host;
     $string .= "Host: " . $self->host . "\x0d\x0a";
 
     my $origin = $self->origin ? $self->origin : 'http://' . $self->host;

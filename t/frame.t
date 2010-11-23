@@ -6,9 +6,7 @@ use warnings;
 use utf8;
 
 use Test::More tests => 20;
-
-use FindBin;
-use lib "$FindBin::Bin/../lib";
+use Encode;
 
 use_ok 'Protocol::WebSocket::Frame';
 
@@ -46,7 +44,6 @@ is $f->next => 'foo';
 is $f->next => 'bar';
 ok not defined $f->next;
 
-use Encode;
 # We append bytes, but read characters
 $f->append("\x00" . Encode::encode_utf8('☺') . "\xff");
 is $f->next => '☺';
@@ -59,4 +56,4 @@ is $f->to_string => "\x00123\xff";
 
 # We pass characters, but send bytes
 $f = Protocol::WebSocket::Frame->new('☺');
-is $f->to_string => "\x00" . Encode::encode_utf8("☺"). "\xff";
+is $f->to_string => "\x00" . Encode::encode_utf8("☺") . "\xff";

@@ -5,9 +5,6 @@ use warnings;
 
 use Test::More tests => 17;
 
-use FindBin;
-use lib "$FindBin::Bin/../lib";
-
 use_ok 'Protocol::WebSocket::Response';
 
 my $res;

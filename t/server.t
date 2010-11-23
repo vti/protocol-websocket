@@ -5,9 +5,6 @@ use warnings;
 
 use Test::More tests => 15;
 
-use FindBin;
-use lib "$FindBin::Bin/../lib";
-
 use_ok 'Protocol::WebSocket::Handshake::Server';
 
 my $h = Protocol::WebSocket::Handshake::Server->new;
