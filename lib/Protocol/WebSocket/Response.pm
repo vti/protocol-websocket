@@ -60,8 +60,7 @@ sub cookies { @_ > 1 ? $_[0]->{cookies} = $_[1] : $_[0]->{cookies} }
 sub cookie {
     my $self = shift;
 
-    push @{$self->{cookies}},
-      Protocol::WebSocket::Cookie::Response->new(@_);
+    push @{$self->{cookies}}, $self->_build_cookie(@_);
 }
 
 sub parse {
@@ -117,24 +116,11 @@ sub parse {
             $self->version(75);
         }
 
-        return $self->done if $self->finalize;
+        return $self->done if $self->_finalize;
 
         $self->error('Not a valid response');
         return;
     }
-
-    return 1;
-}
-
-sub finalize {
-    my $self = shift;
-
-    my $url = Protocol::WebSocket::URL->new;
-    return unless $url->parse($self->location);
-
-    $self->secure($url->secure);
-    $self->host($url->host);
-    $self->resource_name($url->resource_name);
 
     return 1;
 }
@@ -152,15 +138,17 @@ sub to_string {
     if ($self->version > 75) {
         Carp::croak(qq/host is required/) unless defined $self->host;
 
-        my $location = Protocol::WebSocket::URL->new(
+        my $location = $self->_build_url(
             host          => $self->host,
             secure        => $self->secure,
             resource_name => $self->resource_name,
         );
 
-        my $origin = $self->origin ? $self->origin : 'http://' . $location->host;
+        my $origin =
+          $self->origin ? $self->origin : 'http://' . $location->host;
         $string .= 'Sec-WebSocket-Origin: ' . $origin . "\x0d\x0a";
-        $string .= 'Sec-WebSocket-Location: ' . $location->to_string . "\x0d\x0a";
+        $string
+          .= 'Sec-WebSocket-Location: ' . $location->to_string . "\x0d\x0a";
     }
 
     if (@{$self->cookies}) {
@@ -175,5 +163,21 @@ sub to_string {
 
     return $string;
 }
+
+sub _finalize {
+    my $self = shift;
+
+    my $url = $self->_build_url;
+    return unless $url->parse($self->location);
+
+    $self->secure($url->secure);
+    $self->host($url->host);
+    $self->resource_name($url->resource_name);
+
+    return 1;
+}
+
+sub _build_url    { shift; Protocol::WebSocket::URL->new(@_) }
+sub _build_cookie { shift; Protocol::WebSocket::Cookie::Response->new(@_) }
 
 1;

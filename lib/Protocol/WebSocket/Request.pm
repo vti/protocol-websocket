@@ -88,7 +88,7 @@ sub parse {
             $self->version(75);
         }
 
-        return $self->done if $self->finalize;
+        return $self->done if $self->_finalize;
 
         $self->error('Not a valid request');
         return;
@@ -115,6 +115,43 @@ sub connection { shift->{fields}->{'Connection'} }
 
 sub number1 { shift->_number('number1', 'key1', @_) }
 sub number2 { shift->_number('number2', 'key2', @_) }
+
+sub key1 { shift->_key('key1' => @_) }
+sub key2 { shift->_key('key2' => @_) }
+
+sub to_string {
+    my $self = shift;
+
+    my $string = '';
+
+    Carp::croak(qq/resource_name is required/)
+      unless defined $self->resource_name;
+    $string .= "GET " . $self->resource_name . " HTTP/1.1\x0d\x0a";
+
+    $string .= "Upgrade: WebSocket\x0d\x0a";
+    $string .= "Connection: Upgrade\x0d\x0a";
+
+    Carp::croak(qq/Host is required/) unless defined $self->host;
+    $string .= "Host: " . $self->host . "\x0d\x0a";
+
+    my $origin = $self->origin ? $self->origin : 'http://' . $self->host;
+    $string .= "Origin: " . $origin . "\x0d\x0a";
+
+    if ($self->version > 75) {
+        $self->_generate_keys;
+
+        $string .= 'Sec-WebSocket-Key1: ' . $self->key1 . "\x0d\x0a";
+        $string .= 'Sec-WebSocket-Key2: ' . $self->key2 . "\x0d\x0a";
+    }
+
+    # TODO cookies
+
+    $string .= "\x0d\x0a";
+
+    $string .= $self->challenge if $self->version > 75;
+
+    return $string;
+}
 
 sub _number {
     my $self = shift;
@@ -151,9 +188,6 @@ sub _extract_number {
 
     return int($number / $spaces);
 }
-
-sub key1 { shift->_key('key1' => @_) }
-sub key2 { shift->_key('key2' => @_) }
 
 sub _key {
     my $self  = shift;
@@ -253,7 +287,7 @@ sub _generate_challenge {
     return $challenge;
 }
 
-sub finalize {
+sub _finalize {
     my $self = shift;
 
     return unless $self->upgrade    && $self->upgrade    eq 'WebSocket';
@@ -261,7 +295,7 @@ sub finalize {
     return unless $self->origin;
     return unless $self->host;
 
-    my $cookie = Protocol::WebSocket::Cookie::Request->new;
+    my $cookie = $self->_build_cookie;
     if (my $cookies = $cookie->parse($self->fields->{Cookie})) {
         $self->{cookies} = $cookies;
     }
@@ -269,38 +303,6 @@ sub finalize {
     return 1;
 }
 
-sub to_string {
-    my $self = shift;
-
-    my $string = '';
-
-    Carp::croak(qq/resource_name is required/)
-      unless defined $self->resource_name;
-    $string .= "GET " . $self->resource_name . " HTTP/1.1\x0d\x0a";
-
-    $string .= "Upgrade: WebSocket\x0d\x0a";
-    $string .= "Connection: Upgrade\x0d\x0a";
-
-    Carp::croak(qq/Host is required/) unless defined $self->host;
-    $string .= "Host: " . $self->host . "\x0d\x0a";
-
-    my $origin = $self->origin ? $self->origin : 'http://' . $self->host;
-    $string .= "Origin: " . $origin . "\x0d\x0a";
-
-    if ($self->version > 75) {
-        $self->_generate_keys;
-
-        $string .= 'Sec-WebSocket-Key1: ' . $self->key1 . "\x0d\x0a";
-        $string .= 'Sec-WebSocket-Key2: ' . $self->key2 . "\x0d\x0a";
-    }
-
-    # TODO cookies
-
-    $string .= "\x0d\x0a";
-
-    $string .= $self->challenge if $self->version > 75;
-
-    return $string;
-}
+sub _build_cookie { Protocol::WebSocket::Cookie::Request->new }
 
 1;
