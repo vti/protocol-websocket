@@ -43,3 +43,56 @@ sub to_string {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+Protocol::WebSocket::Frame - WebSocket Frame
+
+=head1 SYNOPSIS
+
+    # Create frame
+    my $frame = Protocol::WebSocket::Frame->new('123');
+    $frame->to_string; # \x00123\xff
+
+    # Parse frames
+    my $frame = Protocol::WebSocket::Frame->new;
+    $frame->append("123\x00foo\xff56\x00bar\xff789");
+    $f->next; # foo
+    $f->next; # bar
+
+=head1 DESCRIPTION
+
+Construct or parse a WebSocket frame.
+
+=head1 METHODS
+
+=head2 C<new>
+
+Create a new L<Protocol::WebSocket::Frame> instance.
+
+=head2 C<append>
+
+    $frame->append("\x00foo");
+    $frame->append("bar\xff");
+
+Append a frame chunk.
+
+=head2 C<next>
+
+    $frame->append("\x00foo");
+    $frame->append("\xff\x00bar\xff");
+
+    $fram->next; # foo
+    $fram->next; # bar
+
+Return the next frame.
+
+=head2 C<to_string>
+
+    my $frame = Protocol::WebSocket::Frame->new('foo');
+    $frame->to_string; # \x00foo\xff
+
+Construct a WebSocket frame.
+
+=cut

@@ -181,3 +181,50 @@ sub _build_url    { shift; Protocol::WebSocket::URL->new(@_) }
 sub _build_cookie { shift; Protocol::WebSocket::Cookie::Response->new(@_) }
 
 1;
+__END__
+
+=head1 NAME
+
+Protocol::WebSocket::Response - WebSocket Response
+
+=head1 SYNOPSIS
+
+    # Constructor
+
+    # Parser
+
+=head1 DESCRIPTION
+
+Construct or parse a WebSocket response.
+
+=head1 ATTRIBUTES
+
+=head2 C<host>
+
+=head2 C<location>
+
+=head2 C<origin>
+
+=head2 C<resource_name>
+
+=head2 C<secure>
+
+=head1 METHODS
+
+=head2 C<new>
+
+Create a new L<Protocol::WebSocket::Response> instance.
+
+=head2 C<parse>
+
+Parse a WebSocket response.
+
+=head2 C<to_string>
+
+Construct a WebSocket response.
+
+=head2 C<cookie>
+
+=head2 C<cookies>
+
+=cut

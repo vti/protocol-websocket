@@ -68,3 +68,37 @@ sub checksum {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+Protocol::WebSocket::Message - Base class for WebSocket request and response
+
+=head1 DESCRIPTION
+
+A base class for L<Protocol::WebSocket::Request> and
+L<Protocol::WebSocket::Response>.
+
+=head1 ATTRIBUTES
+
+=head2 C<version>
+
+=head2 C<fields>
+
+=head2 C<error>
+
+=head2 C<number1>
+
+=head2 C<number2>
+
+=head2 C<challenge>
+
+=head1 METHODS
+
+=head2 C<new>
+
+Create a new L<Protocol::WebSocket::Message> instance.
+
+=head2 C<checksum>
+
+=cut

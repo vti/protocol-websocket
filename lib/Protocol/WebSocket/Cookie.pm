@@ -64,3 +64,29 @@ sub to_string {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+Protocol::WebSocket::Cookie - Base class for WebSocket cookies
+
+=head1 DESCRIPTION
+
+A base class for L<Protocol::WebSocket::Cookie::Request> and
+L<Protocol::WebSocket::Cookie::Response>.
+
+=head1 ATTRIBUTES
+
+=head2 C<pairs>
+
+=head1 METHODS
+
+=head2 C<new>
+
+Create a new L<Protocol::WebSocket::Cookie> instance.
+
+=head2 C<parse>
+
+=head2 C<to_string>
+
+=cut

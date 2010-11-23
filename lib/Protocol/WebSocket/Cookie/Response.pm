@@ -46,3 +46,39 @@ sub to_string {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+Protocol::WebSocket::Cookie::Response - WebSocket Cookie Response
+
+=head1 SYNOPSIS
+
+    # Constructor
+    my $cookie = Parser::WebSocket::Cookie::Response->new(
+        name    => 'foo',
+        value   => 'bar',
+        discard => 1,
+        max_age => 0
+    );
+    $cookie->to_string; # foo=bar; Discard; Max-Age=0; Version=1
+
+    # Parser
+    my $cookie = Parser::WebSocket::Cookie::Response->new;
+    $cookie->parse('foo=bar; Discard; Max-Age=0; Version=1');
+
+=head1 DESCRIPTION
+
+Construct or parse a WebSocket response cookie.
+
+=head1 METHODS
+
+=head2 C<parse>
+
+Parse a WebSocket response cookie.
+
+=head2 C<to_string>
+
+Construct a WebSocket response cookie.
+
+=cut

@@ -306,3 +306,80 @@ sub _finalize {
 sub _build_cookie { Protocol::WebSocket::Cookie::Request->new }
 
 1;
+__END__
+
+=head1 NAME
+
+Protocol::WebSocket::Request - WebSocket Request
+
+=head1 SYNOPSIS
+
+    # Constructor
+    my $req = Protocol::WebSocket::Request->new(
+        fields        => {Host => 'example.com'},
+        resource_name => '/demo'
+    );
+    $req->to_string; # GET /demo HTTP/1.1
+                     # Upgrade: WebSocket
+                     # Connection: Upgrade
+                     # Host: example.com
+                     # Origin: http://example.com
+                     # Sec-WebSocket-Key1: 32 0  3lD& 24+<    i u4  8! -6/4
+                     # Sec-WebSocket-Key2: 2q 4  2  54 09064
+                     #
+                     # x#####
+
+    # Parser
+    my $req = Protocol::WebSocket::Request->new;
+    $req->parse("GET /demo HTTP/1.1\x0d\x0a");
+    $req->parse("Upgrade: WebSocket\x0d\x0a");
+    $req->parse("Connection: Upgrade\x0d\x0a");
+    $req->parse("Host: example.com\x0d\x0a");
+    $req->parse("Origin: http://example.com\x0d\x0a");
+    $req->parse(
+        "Sec-WebSocket-Key1: 18x 6]8vM;54 *(5:  {   U1]8  z [  8\x0d\x0a");
+    $req->parse(
+        "Sec-WebSocket-Key2: 1_ tx7X d  <  nw  334J702) 7]o}` 0\x0d\x0a");
+    $req->parse("\x0d\x0aTm[K T2u");
+
+=head1 DESCRIPTION
+
+Construct or parse a WebSocket request.
+
+=head1 ATTRIBUTES
+
+=head2 C<host>
+
+=head2 C<key1>
+
+=head2 C<key2>
+
+=head2 C<number1>
+
+=head2 C<number2>
+
+=head2 C<origin>
+
+=head2 C<resource_name>
+
+=head1 METHODS
+
+=head2 C<new>
+
+Create a new L<Protocol::WebSocket::Request> instance.
+
+=head2 C<parse>
+
+Parse a WebSocket request.
+
+=head2 C<to_string>
+
+Construct a WebSocket request.
+
+=head2 C<connection>
+
+=head2 C<cookies>
+
+=head2 C<upgrade>
+
+=cut

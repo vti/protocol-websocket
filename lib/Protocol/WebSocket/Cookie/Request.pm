@@ -41,12 +41,54 @@ sub parse {
     return $cookies;
 }
 
-sub _build_cookie { shift; Protocol::WebSocket::Cookie::Request->new(@_) }
-
 sub name    { @_ > 1 ? $_[0]->{name}    = $_[1] : $_[0]->{name} }
 sub value   { @_ > 1 ? $_[0]->{value}   = $_[1] : $_[0]->{value} }
 sub version { @_ > 1 ? $_[0]->{version} = $_[1] : $_[0]->{version} }
 sub path    { @_ > 1 ? $_[0]->{path}    = $_[1] : $_[0]->{path} }
 sub domain  { @_ > 1 ? $_[0]->{domain}  = $_[1] : $_[0]->{domain} }
 
+sub _build_cookie { shift; Protocol::WebSocket::Cookie::Request->new(@_) }
+
 1;
+__END__
+
+=head1 NAME
+
+Protocol::WebSocket::Cookie::Request - WebSocket Cookie Request
+
+=head1 SYNOPSIS
+
+    # Constructor
+
+    # Parser
+    my $cookie = Protocol::WebSocket::Cookie::Request->new;
+    $cookies = $cookie->parse(
+        '$Version=1; foo="bar"; $Path=/; bar=baz; $Domain=.example.com');
+
+=head1 DESCRIPTION
+
+Construct or parse a WebSocket request cookie.
+
+=head1 ATTRIBUTES
+
+=head2 C<name>
+
+=head2 C<value>
+
+=head2 C<version>
+
+=head2 C<path>
+
+=head2 C<domain>
+
+=head1 METHODS
+
+=head2 C<parse>
+
+Parse a WebSocket request cookie.
+
+=head2 C<to_string>
+
+Construct a WebSocket request cookie.
+
+=cut

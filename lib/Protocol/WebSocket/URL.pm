@@ -60,3 +60,53 @@ sub to_string {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+Protocol::WebSocket::URL - WebSocket URL
+
+=head1 SYNOPSIS
+
+    # Construct
+    my $url = Protocol::WebSocket::URL->new;
+    $url->host('example.com');
+    $url->port('3000');
+    $url->secure(1);
+    $url->to_string; # wss://example.com:3000
+
+    # Parse
+    my $url = Protocol::WebSocket::URL->new('wss://example.com:3000);
+    $url->host;   # example.com
+    $url->port;   # 3000
+    $url->secure; # 1
+
+=head1 DESCRIPTION
+
+Construct or parse a WebSocket URL.
+
+=head1 ATTRIBUTES
+
+=head2 C<host>
+
+=head2 C<port>
+
+=head2 C<resource_name>
+
+=head2 C<secure>
+
+=head1 METHODS
+
+=head2 C<new>
+
+Create a new L<Protocol::WebSocket::URL> instance.
+
+=head2 C<parse>
+
+Parse a WebSocket URL.
+
+=head2 C<to_string>
+
+Construct a WebSocket URL.
+
+=cut
