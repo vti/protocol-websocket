@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 17;
+use Test::More tests => 18;
 
 use_ok 'Protocol::WebSocket::Response';
 
@@ -62,3 +62,19 @@ is $res->to_string => "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
   . "Sec-WebSocket-Location: ws://example.com/demo\x0d\x0a"
   . "\x0d\x0a"
   . "0st3Rl&q-2ZU^weu";
+
+$res = Protocol::WebSocket::Response->new(
+    host          => 'example.com',
+    resource_name => '/demo',
+    origin        => 'file://',
+    key1          => "18x 6]8vM;54 *(5:  {   U1]8  z [  8",
+    key2          => "1_ tx7X d  <  nw  334J702) 7]o}` 0",
+    challenge     => "Tm[K T2u"
+);
+is $res->to_string => "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
+  . "Upgrade: WebSocket\x0d\x0a"
+  . "Connection: Upgrade\x0d\x0a"
+  . "Sec-WebSocket-Origin: file://\x0d\x0a"
+  . "Sec-WebSocket-Location: ws://example.com/demo\x0d\x0a"
+  . "\x0d\x0a"
+  . "fQJ,fN/4F4!~K~MH";

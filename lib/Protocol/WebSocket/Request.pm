@@ -167,28 +167,6 @@ sub _number {
     return $self->{$name} ||= $self->_extract_number($self->$key);
 }
 
-sub _extract_number {
-    my $self = shift;
-    my $key  = shift;
-
-    my $number = '';
-    while ($key =~ m/(\d)/g) {
-        $number .= $1;
-    }
-    $number = int($number);
-
-    my $spaces = 0;
-    while ($key =~ m/ /g) {
-        $spaces++;
-    }
-
-    if ($spaces == 0) {
-        return;
-    }
-
-    return int($number / $spaces);
-}
-
 sub _key {
     my $self  = shift;
     my $name  = shift;

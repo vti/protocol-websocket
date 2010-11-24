@@ -67,6 +67,28 @@ sub checksum {
     return $self->{checksum} ||= $checksum;
 }
 
+sub _extract_number {
+    my $self = shift;
+    my $key  = shift;
+
+    my $number = '';
+    while ($key =~ m/(\d)/g) {
+        $number .= $1;
+    }
+    $number = int($number);
+
+    my $spaces = 0;
+    while ($key =~ m/ /g) {
+        $spaces++;
+    }
+
+    if ($spaces == 0) {
+        return;
+    }
+
+    return int($number / $spaces);
+}
+
 1;
 __END__
 

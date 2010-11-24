@@ -125,6 +125,25 @@ sub parse {
     return 1;
 }
 
+sub number1 { shift->_number('number1', 'key1', @_) }
+sub number2 { shift->_number('number2', 'key2', @_) }
+
+sub _number {
+    my $self  = shift;
+    my ($name, $key, $value) = @_;
+
+    my $method = "SUPER::$name";
+    return $self->$method($value) if defined $value;
+
+    $value = $self->$method();
+    $value = $self->_extract_number($self->$key) if not defined $value;
+
+    return $value;
+}
+
+sub key1 { @_ > 1 ? $_[0]->{key1} = $_[1] : $_[0]->{key1} }
+sub key2 { @_ > 1 ? $_[0]->{key2} = $_[1] : $_[0]->{key2} }
+
 sub to_string {
     my $self = shift;
 
