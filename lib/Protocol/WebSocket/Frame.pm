@@ -7,6 +7,7 @@ use Encode;
 
 sub new {
     my $class = shift;
+    $class = ref $class if ref $class;
     my $buffer = shift;
 
     my $self = {@_};

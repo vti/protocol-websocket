@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 105;
+use Test::More tests => 107;
 
 use_ok 'Protocol::WebSocket::Request';
 
@@ -152,6 +152,15 @@ is $req->checksum => "fQJ,fN/4F4!~K~MH";
 
 $req = Protocol::WebSocket::Request->new(
     fields        => {Host => 'example.com'},
+    resource_name => '/demo',
+    key1          => '55 997',
+    key2          => '3  3  64  98',
+    challenge     => "\x00\x09\x68\x32\x00\x78\xc7\x10"
+);
+is $req->checksum => "\xc4\x15\xc2\xc8\x29\x5c\x94\x8a\x95\xb9\x4d\xec\x5b\x1d\x33\xce";
+
+$req = Protocol::WebSocket::Request->new(
+    fields        => {Host => 'example.com'},
     resource_name => '/demo'
 );
 $req->to_string;
@@ -160,3 +169,4 @@ ok $req->key1;
 ok $req->number2;
 ok $req->key2;
 is length($req->challenge) => 8;
+is length($req->checksum) => 16;
