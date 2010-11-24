@@ -129,7 +129,7 @@ sub number1 { shift->_number('number1', 'key1', @_) }
 sub number2 { shift->_number('number2', 'key2', @_) }
 
 sub _number {
-    my $self  = shift;
+    my $self = shift;
     my ($name, $key, $value) = @_;
 
     my $method = "SUPER::$name";
@@ -154,17 +154,20 @@ sub to_string {
     $string .= "Upgrade: WebSocket\x0d\x0a";
     $string .= "Connection: Upgrade\x0d\x0a";
 
-    if ($self->version > 75) {
-        Carp::croak(qq/host is required/) unless defined $self->host;
+    Carp::croak(qq/host is required/) unless defined $self->host;
 
-        my $location = $self->_build_url(
-            host          => $self->host,
-            secure        => $self->secure,
-            resource_name => $self->resource_name,
-        );
+    my $location = $self->_build_url(
+        host          => $self->host,
+        secure        => $self->secure,
+        resource_name => $self->resource_name,
+    );
+    my $origin = $self->origin ? $self->origin : 'http://' . $location->host;
 
-        my $origin =
-          $self->origin ? $self->origin : 'http://' . $location->host;
+    if ($self->version <= 75) {
+        $string .= 'WebSocket-Origin: ' . $origin . "\x0d\x0a";
+        $string .= 'WebSocket-Location: ' . $location->to_string . "\x0d\x0a";
+    }
+    else {
         $string .= 'Sec-WebSocket-Origin: ' . $origin . "\x0d\x0a";
         $string
           .= 'Sec-WebSocket-Location: ' . $location->to_string . "\x0d\x0a";
