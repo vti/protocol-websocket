@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 107;
+use Test::More tests => 110;
 
 use_ok 'Protocol::WebSocket::Request';
 
@@ -72,7 +72,8 @@ ok $req->parse("Connection: Upgrade\x0d\x0a");
 ok $req->parse("Host: example.com:3000\x0d\x0a");
 ok $req->parse("Origin: null\x0d\x0a");
 ok $req->parse("\x0d\x0a");
-is $req->state => 'done';
+is $req->version => 75;
+is $req->state   => 'done';
 
 $req = Protocol::WebSocket::Request->new;
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
@@ -133,6 +134,30 @@ ok not defined $req->parse("\x0d\x0a");
 is $req->state => 'error';
 
 $req = Protocol::WebSocket::Request->new(
+    version       => 75,
+    fields        => {Host => 'example.com'},
+    resource_name => '/demo'
+);
+is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
+  . "Upgrade: WebSocket\x0d\x0a"
+  . "Connection: Upgrade\x0d\x0a"
+  . "Host: example.com\x0d\x0a"
+  . "Origin: http://example.com\x0d\x0a"
+  . "\x0d\x0a";
+
+$req = Protocol::WebSocket::Request->new(
+    version       => 75,
+    fields        => {Host => 'example.com'},
+    resource_name => '/demo'
+);
+is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
+  . "Upgrade: WebSocket\x0d\x0a"
+  . "Connection: Upgrade\x0d\x0a"
+  . "Host: example.com\x0d\x0a"
+  . "Origin: http://example.com\x0d\x0a"
+  . "\x0d\x0a";
+
+$req = Protocol::WebSocket::Request->new(
     fields        => {Host => 'example.com'},
     resource_name => '/demo',
     key1          => '18x 6]8vM;54 *(5:  {   U1]8  z [  8',
@@ -158,7 +183,8 @@ $req = Protocol::WebSocket::Request->new(
     key2          => '3  3  64  98',
     challenge     => "\x00\x09\x68\x32\x00\x78\xc7\x10"
 );
-is $req->checksum => "\xc4\x15\xc2\xc8\x29\x5c\x94\x8a\x95\xb9\x4d\xec\x5b\x1d\x33\xce";
+is $req->checksum =>
+  "\xc4\x15\xc2\xc8\x29\x5c\x94\x8a\x95\xb9\x4d\xec\x5b\x1d\x33\xce";
 
 $req = Protocol::WebSocket::Request->new(
     fields        => {Host => 'example.com'},
@@ -170,4 +196,4 @@ ok $req->key1;
 ok $req->number2;
 ok $req->key2;
 is length($req->challenge) => 8;
-is length($req->checksum) => 16;
+is length($req->checksum)  => 16;
