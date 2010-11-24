@@ -142,6 +142,8 @@ sub to_string {
 
         $string .= 'Sec-WebSocket-Key1: ' . $self->key1 . "\x0d\x0a";
         $string .= 'Sec-WebSocket-Key2: ' . $self->key2 . "\x0d\x0a";
+
+        $string .= 'Content-Length: ' . length($self->challenge) . "\x0d\x0a";
     }
 
     # TODO cookies
