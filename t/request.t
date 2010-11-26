@@ -151,7 +151,7 @@ is $req->state => 'error';
 
 $req = Protocol::WebSocket::Request->new(
     version       => 75,
-    fields        => {Host => 'example.com'},
+    host          => 'example.com',
     resource_name => '/demo'
 );
 is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
@@ -163,7 +163,7 @@ is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
 
 $req = Protocol::WebSocket::Request->new(
     version       => 75,
-    fields        => {Host => 'example.com'},
+    host          => 'example.com',
     resource_name => '/demo'
 );
 is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
@@ -174,7 +174,7 @@ is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
   . "\x0d\x0a";
 
 $req = Protocol::WebSocket::Request->new(
-    fields        => {Host => 'example.com'},
+    host          => 'example.com',
     resource_name => '/demo',
     key1          => '18x 6]8vM;54 *(5:  {   U1]8  z [  8',
     key2          => '1_ tx7X d  <  nw  334J702) 7]o}` 0',
@@ -193,7 +193,7 @@ is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
 is $req->checksum => "fQJ,fN/4F4!~K~MH";
 
 $req = Protocol::WebSocket::Request->new(
-    fields        => {Host => 'example.com'},
+    host          => 'example.com',
     resource_name => '/demo',
     key1          => '55 997',
     key2          => '3  3  64  98',
@@ -203,7 +203,7 @@ is $req->checksum =>
   "\xc4\x15\xc2\xc8\x29\x5c\x94\x8a\x95\xb9\x4d\xec\x5b\x1d\x33\xce";
 
 $req = Protocol::WebSocket::Request->new(
-    fields        => {Host => 'example.com'},
+    host          => 'example.com',
     resource_name => '/demo'
 );
 $req->to_string;

@@ -29,7 +29,7 @@ sub resource_name {
 }
 
 sub parse {
-    my $self  = shift;
+    my $self = shift;
 
     return 1 unless defined $_[0];
 
@@ -103,17 +103,7 @@ sub parse {
     return 1;
 }
 
-sub host {
-    my $self = shift;
-    my $host = shift;
-
-    return $self->{fields}->{'Host'} unless defined $host;
-
-    $self->{fields}->{'Host'} = $host;
-
-    return $self;
-}
-
+sub host { @_ > 1 ? $_[0]->{host} = $_[1] : $_[0]->{host} }
 sub origin { shift->{fields}->{'Origin'} }
 
 sub upgrade    { shift->{fields}->{'Upgrade'} }
@@ -279,7 +269,10 @@ sub _finalize {
     return unless $self->upgrade    && $self->upgrade    eq 'WebSocket';
     return unless $self->connection && $self->connection eq 'Upgrade';
     return unless $self->origin;
-    return unless $self->host;
+
+    my $host = $self->fields->{'Host'};
+    return unless $host;
+    $self->host($host);
 
     my $cookie = $self->_build_cookie;
     if (my $cookies = $cookie->parse($self->fields->{Cookie})) {
@@ -356,7 +349,9 @@ Create a new L<Protocol::WebSocket::Request> instance.
 
 =head2 C<parse>
 
-Parse a WebSocket request.
+    $req->parse($buffer);
+
+Parse a WebSocket request. Incoming buffer is modified.
 
 =head2 C<to_string>
 

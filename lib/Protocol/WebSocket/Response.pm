@@ -223,7 +223,9 @@ Create a new L<Protocol::WebSocket::Response> instance.
 
 =head2 C<parse>
 
-Parse a WebSocket response.
+    $res->parse($buffer);
+
+Parse a WebSocket response. Incoming buffer is modified.
 
 =head2 C<to_string>
 
