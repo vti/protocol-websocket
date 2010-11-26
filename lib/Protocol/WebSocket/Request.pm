@@ -8,6 +8,7 @@ use base 'Protocol::WebSocket::Message';
 use Protocol::WebSocket::Cookie::Request;
 
 require Carp;
+use Scalar::Util 'readonly';
 
 sub new {
     my $self = shift->SUPER::new(@_);
@@ -29,21 +30,20 @@ sub resource_name {
 
 sub parse {
     my $self  = shift;
-    my $chunk = shift;
 
-    return 1 unless length $chunk;
+    return 1 unless defined $_[0];
 
     return if $self->error;
 
-    $self->{buffer} .= $chunk;
-    $chunk = $self->{buffer};
+    my $buffer = $self->{buffer} .= $_[0];
+    $_[0] = '' unless readonly $_[0];
 
-    if (length $chunk > $self->{max_request_size}) {
+    if (length $buffer > $self->{max_request_size}) {
         $self->error('Request is too big');
         return;
     }
 
-    while ($chunk =~ s/^(.*?)\x0d\x0a//) {
+    while ($buffer =~ s/^(.*?)\x0d\x0a//) {
         my $line = $1;
 
         if ($self->state eq 'request_line') {
@@ -75,17 +75,23 @@ sub parse {
 
     if ($self->state eq 'body') {
         if ($self->key1 && $self->key2) {
-            return 1 if length $chunk < 8;
+            return 1 if length $buffer < 8;
 
-            if (length $chunk > 8) {
+            if (length $buffer > 8) {
                 $self->error('Body is too long');
                 return;
             }
 
-            $self->challenge($chunk);
+            my $challenge = substr $buffer, 0, 8, '';
+            $self->challenge($challenge);
         }
         else {
             $self->version(75);
+        }
+
+        if (length $buffer) {
+            $self->error('Leftovers');
+            return;
         }
 
         return $self->done if $self->_finalize;

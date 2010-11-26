@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 20;
+use Test::More tests => 29;
 
 use_ok 'Protocol::WebSocket::Response';
 
@@ -62,6 +62,35 @@ ok !$res->secure;
 is $res->host          => 'example.com';
 is $res->resource_name => '/demo';
 is $res->origin        => 'file://';
+
+$res = Protocol::WebSocket::Response->new;
+my $message =
+    "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
+  . "Upgrade: WebSocket\x0d\x0a"
+  . "Connection: Upgrade\x0d\x0a";
+ok $res->parse($message);
+is $message => '';
+$message =
+    "Sec-WebSocket-Origin: file://\x0d\x0a"
+  . "Sec-WebSocket-Location: ws://example.com/demo\x0d\x0a"
+  . "\x0d\x0a"
+  . "0st3Rl&q-2ZU^weu\x00foo\xff";
+ok $res->parse($message);
+ok $res->is_done;
+is $message => "\x00foo\xff";
+
+$message =
+    "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
+  . "Upgrade: WebSocket\x0d\x0a"
+  . "Connection: Upgrade\x0d\x0a"
+  . "WebSocket-Origin: file://\x0d\x0a"
+  . "WebSocket-Location: ws://example.com/demo\x0d\x0a"
+  . "\x0d\x0a\x00foo\xff";
+$res = Protocol::WebSocket::Response->new;
+ok $res->parse($message);
+ok $res->is_done;
+is $res->version => 75;
+is $message => "\x00foo\xff";
 
 $res = Protocol::WebSocket::Response->new(
     host          => 'example.com',

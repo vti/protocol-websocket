@@ -45,6 +45,10 @@ Low level WebSocket response parser and constructor.
 
 Low level WebSocket url parser and constructor.
 
+=head1 CREDITS
+
+Paul "LeoNerd" Evans
+
 =head1 AUTHOR
 
 Viacheslav Tykhanovskyi, C<vti@cpan.org>.

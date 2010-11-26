@@ -9,6 +9,7 @@ use Protocol::WebSocket::URL;
 use Protocol::WebSocket::Cookie::Response;
 
 require Carp;
+use Scalar::Util 'readonly';
 
 sub new {
     my $self = shift->SUPER::new(@_);
@@ -22,32 +23,8 @@ sub new {
     return $self;
 }
 
-sub origin {
-    my $self = shift;
-
-    unless (@_) {
-        return $self->{fields}->{'Sec-WebSocket-Origin'}
-          ||= delete $self->{origin};
-    }
-
-    $self->{fields}->{'Sec-WebSocket-Origin'} = shift;
-
-    return $self;
-}
-
-sub location {
-    my $self = shift;
-
-    unless (@_) {
-        return $self->{fields}->{'Sec-WebSocket-Location'}
-          ||= delete $self->{location};
-    }
-
-    $self->{fields}->{'Sec-WebSocket-Location'} = shift;
-
-    return $self;
-}
-
+sub origin   { @_ > 1 ? $_[0]->{origin}   = $_[1] : $_[0]->{origin} }
+sub location   { @_ > 1 ? $_[0]->{location}   = $_[1] : $_[0]->{location} }
 sub host   { @_ > 1 ? $_[0]->{host}   = $_[1] : $_[0]->{host} }
 sub secure { @_ > 1 ? $_[0]->{secure} = $_[1] : $_[0]->{secure} }
 
@@ -65,21 +42,20 @@ sub cookie {
 
 sub parse {
     my $self  = shift;
-    my $chunk = shift;
 
-    return 1 unless length $chunk;
+    return 1 unless defined $_[0];
 
     return if $self->error;
 
-    $self->{buffer} .= $chunk;
-    $chunk = $self->{buffer};
+    my $buffer = $self->{buffer} .= $_[0];
+    $_[0] = '' unless readonly $_[0];
 
-    if (length $chunk > $self->{max_response_size}) {
+    if (length $buffer > $self->{max_response_size}) {
         $self->error('Request is too big');
         return;
     }
 
-    while ($chunk =~ s/^(.*?)\x0d\x0a//) {
+    while ($buffer =~ s/^(.*?)\x0d\x0a//) {
         my $line = $1;
 
         if ($self->state eq 'response_line') {
@@ -101,22 +77,22 @@ sub parse {
     }
 
     if ($self->state eq 'body') {
-        if ($self->origin && $self->location) {
-            return 1 if length $chunk < 16;
-
-            if (length $chunk > 16) {
-                $self->error('Body is too long');
-                return;
-            }
+        if ($self->fields->{'Sec-WebSocket-Origin'}) {
+            return 1 if length $buffer < 16;
 
             $self->version(76);
-            $self->checksum($chunk);
+
+            my $checksum = substr $buffer, 0, 16, '';
+            $self->checksum($checksum);
         }
         else {
             $self->version(75);
         }
 
-        return $self->done if $self->_finalize;
+        if ($self->_finalize) {
+            $_[0] = $buffer unless readonly $_[0];
+            return $self->done;
+        }
 
         $self->error('Not a valid response');
         return;
@@ -189,12 +165,20 @@ sub to_string {
 sub _finalize {
     my $self = shift;
 
+    my $location = $self->fields->{'Sec-WebSocket-Location'}
+      || $self->fields->{'WebSocket-Location'};
+    return unless defined $location;
+    $self->location($location);
+
     my $url = $self->_build_url;
     return unless $url->parse($self->location);
 
     $self->secure($url->secure);
     $self->host($url->host);
     $self->resource_name($url->resource_name);
+
+    $self->origin($self->fields->{'Sec-WebSocket-Origin'}
+          || $self->fields->{'WebSocket-Origin'});
 
     return 1;
 }

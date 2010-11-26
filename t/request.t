@@ -3,11 +3,12 @@
 use strict;
 use warnings;
 
-use Test::More tests => 110;
+use Test::More tests => 117;
 
 use_ok 'Protocol::WebSocket::Request';
 
 my $req = Protocol::WebSocket::Request->new;
+my $message;
 
 is $req->state => 'request_line';
 ok !$req->is_done;
@@ -76,6 +77,20 @@ is $req->version => 75;
 is $req->state   => 'done';
 
 $req = Protocol::WebSocket::Request->new;
+$message =
+    "GET /demo HTTP/1.1\x0d\x0a"
+  . "Upgrade: WebSocket\x0d\x0a"
+  . "Connection: Upgrade\x0d\x0a";
+ok $req->parse($message);
+is $message => '';
+$message =
+  "Host: example.com:3000\x0d\x0a" . "Origin: null\x0d\x0a" . "\x0d\x0a";
+ok $req->parse($message);
+is $message      => '';
+is $req->version => 75;
+ok $req->is_done;
+
+$req = Protocol::WebSocket::Request->new;
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
 ok $req->parse("Upgrade: WebSocket\x0d\x0a");
 ok $req->parse("Connection: Upgrade\x0d\x0a");
@@ -130,7 +145,8 @@ ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
 ok $req->parse("Upgrade: WebSocket\x0d\x0a");
 ok $req->parse("Connection: Upgrade\x0d\x0a");
 ok $req->parse("Host: example.com\x0d\x0a");
-ok not defined $req->parse("\x0d\x0a");
+ok $req->parse("Origin: http://example.com\x0d\x0a");
+ok not defined $req->parse("\x0d\x0afoo");
 is $req->state => 'error';
 
 $req = Protocol::WebSocket::Request->new(
