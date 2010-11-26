@@ -3,7 +3,7 @@ package Protocol::WebSocket;
 use strict;
 use warnings;
 
-our $VERSION = 0.0001;
+our $VERSION = 0.0002;
 
 1;
 __END__
