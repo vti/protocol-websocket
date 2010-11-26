@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Encode;
+use Scalar::Util 'readonly';
 
 sub new {
     my $class = shift;
@@ -20,11 +21,11 @@ sub new {
 
 sub append {
     my $self = shift;
-    my $chunk = shift;
 
-    $chunk = '' unless defined $chunk;
+    return unless defined $_[0];
 
-    $self->{buffer} .= $chunk;
+    $self->{buffer} .= $_[0];
+    $_[0] = '' unless readonly $_[0];
 
     return $self;
 }

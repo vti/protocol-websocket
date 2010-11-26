@@ -5,7 +5,7 @@ use warnings;
 
 use utf8;
 
-use Test::More tests => 20;
+use Test::More tests => 24;
 use Encode;
 
 use_ok 'Protocol::WebSocket::Frame';
@@ -43,6 +43,13 @@ $f->append("123\x00foo\xff56\x00bar\xff789");
 is $f->next => 'foo';
 is $f->next => 'bar';
 ok not defined $f->next;
+
+my $frame = "123\x00foo\xff56\x00bar\xff789";
+$f->append($frame);
+is $f->next => 'foo';
+is $f->next => 'bar';
+ok not defined $f->next;
+is $frame => '';
 
 # We append bytes, but read characters
 $f->append("\x00" . Encode::encode_utf8('☺') . "\xff");
