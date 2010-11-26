@@ -10,7 +10,7 @@ use Protocol::WebSocket::URL;
 sub new {
     my $self = shift->SUPER::new(@_);
 
-    $self->_build_url($self->{url});
+    $self->_set_url($self->{url}) if defined $self->{url};
 
     return $self;
 }
