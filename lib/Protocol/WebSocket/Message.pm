@@ -5,6 +5,7 @@ use warnings;
 
 use base 'Protocol::WebSocket::Stateful';
 
+use Scalar::Util 'readonly';
 require Digest::MD5;
 
 sub new {
@@ -20,10 +21,27 @@ sub new {
 
     $self->{fields} ||= {};
 
+    $self->{max_message_size} ||= 2048;
+
+    $self->{cookies} ||= [];
+
+    $self->state('first_line');
+
     return $self;
 }
 
 sub fields { shift->{fields} }
+
+sub field {
+    my $self = shift;
+    my $name = lc shift;
+
+    return $self->fields->{$name} unless @_;
+
+    $self->fields->{$name} = $_[0];
+
+    return $self;
+}
 
 sub error {
     my $self = shift;
@@ -74,6 +92,41 @@ sub checksum {
     return $self->{checksum} ||= $checksum;
 }
 
+sub parse {
+    my $self = shift;
+
+    return 1 unless defined $_[0];
+
+    return if $self->error;
+
+    return unless $self->_append(@_);
+
+    while (defined(my $line = $self->_get_line)) {
+        if ($self->state eq 'first_line') {
+            return unless defined $self->_parse_first_line($line);
+
+            $self->state('fields');
+        }
+        elsif ($line ne '') {
+            return unless defined $self->_parse_field($line);
+        }
+        else {
+            $self->state('body');
+        }
+    }
+
+    return 1 unless $self->is_state('body');
+
+    my $rv = $self->_parse_body;
+    return unless defined $rv;
+
+    # Need more data
+    return $rv unless ref $rv;
+
+    $_[0] = $self->{buffer} unless readonly $_[0];
+    return $self->done;
+}
+
 sub _extract_number {
     my $self = shift;
     my $key  = shift;
@@ -94,6 +147,47 @@ sub _extract_number {
     }
 
     return int($number / $spaces);
+}
+
+sub _append {
+    my $self = shift;
+
+    return if $self->error;
+
+    $self->{buffer} .= $_[0];
+    $_[0] = '' unless readonly $_[0];
+
+    if (length $self->{buffer} > $self->{max_message_size}) {
+        $self->error('Message is too long');
+        return;
+    }
+
+    return $self;
+}
+
+sub _get_line {
+    my $self = shift;
+
+    if ($self->{buffer} =~ s/^(.*?)\x0d\x0a//) {
+        return $1;
+    }
+
+    return;
+}
+
+sub _parse_field {
+    my $self = shift;
+    my $line = shift;
+
+    my ($name, $value) = split ': ' => $line => 2;
+    unless (defined $name && defined $value) {
+        $self->error('Invalid field');
+        return;
+    }
+
+    $self->field($name => $value);
+
+    return $self;
 }
 
 1;

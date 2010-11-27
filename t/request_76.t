@@ -3,14 +3,13 @@
 use strict;
 use warnings;
 
-use Test::More tests => 55;
+use Test::More tests => 54;
 
 use_ok 'Protocol::WebSocket::Request';
 
 my $req = Protocol::WebSocket::Request->new;
 my $message;
 
-is $req->state => 'request_line';
 ok !$req->is_done;
 ok $req->parse;
 ok $req->parse('');

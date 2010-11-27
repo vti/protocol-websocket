@@ -8,19 +8,6 @@ use base 'Protocol::WebSocket::Message';
 use Protocol::WebSocket::Cookie::Request;
 
 require Carp;
-use Scalar::Util 'readonly';
-
-sub new {
-    my $self = shift->SUPER::new(@_);
-
-    $self->state('request_line');
-
-    $self->{max_request_size} ||= 2048;
-
-    $self->{cookies} ||= [];
-
-    return $self;
-}
 
 sub cookies { shift->{cookies} }
 
@@ -28,83 +15,8 @@ sub resource_name {
     @_ > 1 ? $_[0]->{resource_name} = $_[1] : $_[0]->{resource_name} || '/';
 }
 
-sub parse {
-    my $self = shift;
-
-    return 1 unless defined $_[0];
-
-    return if $self->error;
-
-    my $buffer = $self->{buffer} .= $_[0];
-    $_[0] = '' unless readonly $_[0];
-
-    if (length $buffer > $self->{max_request_size}) {
-        $self->error('Request is too big');
-        return;
-    }
-
-    while ($buffer =~ s/^(.*?)\x0d\x0a//) {
-        my $line = $1;
-
-        if ($self->state eq 'request_line') {
-            my ($req, $resource_name, $http) = split ' ' => $line;
-
-            unless ($req && $resource_name && $http) {
-                $self->error('Wrong request line');
-                return;
-            }
-
-            unless ($req eq 'GET' && $http eq 'HTTP/1.1') {
-                $self->error('Wrong method or http version');
-                return;
-            }
-
-            $self->resource_name($resource_name);
-
-            $self->state('fields');
-        }
-        elsif ($line ne '') {
-            my ($name, $value) = split ': ' => $line => 2;
-
-            $self->fields->{$name} = $value;
-        }
-        else {
-            $self->state('body');
-        }
-    }
-
-    if ($self->state eq 'body') {
-        if ($self->key1 && $self->key2) {
-            return 1 if length $buffer < 8;
-
-            if (length $buffer > 8) {
-                $self->error('Body is too long');
-                return;
-            }
-
-            my $challenge = substr $buffer, 0, 8, '';
-            $self->challenge($challenge);
-        }
-        else {
-            $self->version(75);
-        }
-
-        if (length $buffer) {
-            $self->error('Leftovers');
-            return;
-        }
-
-        return $self->done if $self->_finalize;
-
-        $self->error('Not a valid request');
-        return;
-    }
-
-    return 1;
-}
-
-sub upgrade    { shift->{fields}->{'Upgrade'} }
-sub connection { shift->{fields}->{'Connection'} }
+sub upgrade    { shift->field('Upgrade') }
+sub connection { shift->field('Connection') }
 
 sub number1 { shift->_number('number1', 'key1', @_) }
 sub number2 { shift->_number('number2', 'key2', @_) }
@@ -133,7 +45,8 @@ sub to_string {
     if ($self->version > 75) {
         $self->_generate_keys;
 
-        $string .= 'Sec-WebSocket-Protocol: ' . $self->subprotocol . "\x0d\x0a"
+        $string
+          .= 'Sec-WebSocket-Protocol: ' . $self->subprotocol . "\x0d\x0a"
           if defined $self->subprotocol;
 
         $string .= 'Sec-WebSocket-Key1: ' . $self->key1 . "\x0d\x0a";
@@ -155,6 +68,50 @@ sub to_string {
     return $string;
 }
 
+sub _parse_first_line {
+    my ($self, $line) = @_;
+
+    my ($req, $resource_name, $http) = split ' ' => $line;
+
+    unless ($req && $resource_name && $http) {
+        $self->error('Wrong request line');
+        return;
+    }
+
+    unless ($req eq 'GET' && $http eq 'HTTP/1.1') {
+        $self->error('Wrong method or http version');
+        return;
+    }
+
+    $self->resource_name($resource_name);
+
+    return $self;
+}
+
+sub _parse_body {
+    my $self = shift;
+
+    if ($self->key1 && $self->key2) {
+        return 1 if length $self->{buffer} < 8;
+
+        my $challenge = substr $self->{buffer}, 0, 8, '';
+        $self->challenge($challenge);
+    }
+    else {
+        $self->version(75);
+    }
+
+    if (length $self->{buffer}) {
+        $self->error('Leftovers');
+        return;
+    }
+
+    return $self if $self->_finalize;
+
+    $self->error('Not a valid request');
+    return;
+}
+
 sub _number {
     my $self = shift;
     my ($name, $key, $value) = @_;
@@ -174,11 +131,15 @@ sub _key {
     my $name  = shift;
     my $value = shift;
 
-    return $self->{fields}->{"Sec-WebSocket-" . ucfirst($name)}
-      ||= delete $self->{$name}
-      unless defined $value;
+    unless (defined $value) {
+        if (my $value = delete $self->{$name}) {
+            $self->field("Sec-WebSocket-" . ucfirst($name) => $value);
+        }
 
-    $self->{fields}->{"Sec-WebSocket-" . ucfirst($name)} = $value;
+        return $self->field("Sec-WebSocket-" . ucfirst($name));
+    }
+
+    $self->field("Sec-WebSocket-" . ucfirst($name) => $value);
 
     return $self;
 }
@@ -273,24 +234,24 @@ sub _finalize {
     return unless $self->upgrade    && $self->upgrade    eq 'WebSocket';
     return unless $self->connection && $self->connection eq 'Upgrade';
 
-    my $origin = $self->fields->{'Origin'};
+    my $origin = $self->field('Origin');
     return unless $origin;
     $self->origin($origin);
 
-    my $host = $self->fields->{'Host'};
+    my $host = $self->field('Host');
     return unless $host;
     $self->host($host);
 
-    my $subprotocol = $self->fields->{'Sec-WebSocket-Protocol'}
-      || $self->fields->{'WebSocket-Protocol'};
+    my $subprotocol = $self->field('Sec-WebSocket-Protocol')
+      || $self->field('WebSocket-Protocol');
     $self->subprotocol($subprotocol) if $subprotocol;
 
     my $cookie = $self->_build_cookie;
-    if (my $cookies = $cookie->parse($self->fields->{Cookie})) {
+    if (my $cookies = $cookie->parse($self->field('Cookie'))) {
         $self->{cookies} = $cookies;
     }
 
-    return 1;
+    return $self;
 }
 
 sub _build_cookie { Protocol::WebSocket::Cookie::Request->new }
@@ -306,7 +267,7 @@ Protocol::WebSocket::Request - WebSocket Request
 
     # Constructor
     my $req = Protocol::WebSocket::Request->new(
-        fields        => {Host => 'example.com'},
+        host          => 'example.com',
         resource_name => '/demo'
     );
     $req->to_string; # GET /demo HTTP/1.1
