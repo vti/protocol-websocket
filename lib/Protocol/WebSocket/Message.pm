@@ -37,6 +37,13 @@ sub error {
     return $self;
 }
 
+sub subprotocol {
+    @_ > 1 ? $_[0]->{subprotocol} = $_[1] : $_[0]->{subprotocol};
+}
+
+sub host   { @_ > 1 ? $_[0]->{host}   = $_[1] : $_[0]->{host} }
+sub origin { @_ > 1 ? $_[0]->{origin} = $_[1] : $_[0]->{origin} }
+
 sub version { @_ > 1 ? $_[0]->{version} = $_[1] : $_[0]->{version} }
 
 sub number1   { @_ > 1 ? $_[0]->{number1}   = $_[1] : $_[0]->{number1} }
@@ -44,7 +51,7 @@ sub number2   { @_ > 1 ? $_[0]->{number2}   = $_[1] : $_[0]->{number2} }
 sub challenge { @_ > 1 ? $_[0]->{challenge} = $_[1] : $_[0]->{challenge} }
 
 sub checksum {
-    my $self = shift;
+    my $self     = shift;
     my $checksum = shift;
 
     if (defined $checksum) {

@@ -103,9 +103,6 @@ sub parse {
     return 1;
 }
 
-sub host { @_ > 1 ? $_[0]->{host} = $_[1] : $_[0]->{host} }
-sub origin { shift->{fields}->{'Origin'} }
-
 sub upgrade    { shift->{fields}->{'Upgrade'} }
 sub connection { shift->{fields}->{'Connection'} }
 
@@ -136,10 +133,17 @@ sub to_string {
     if ($self->version > 75) {
         $self->_generate_keys;
 
+        $string .= 'Sec-WebSocket-Protocol: ' . $self->subprotocol . "\x0d\x0a"
+          if defined $self->subprotocol;
+
         $string .= 'Sec-WebSocket-Key1: ' . $self->key1 . "\x0d\x0a";
         $string .= 'Sec-WebSocket-Key2: ' . $self->key2 . "\x0d\x0a";
 
         $string .= 'Content-Length: ' . length($self->challenge) . "\x0d\x0a";
+    }
+    else {
+        $string .= 'WebSocket-Protocol: ' . $self->subprotocol . "\x0d\x0a"
+          if defined $self->subprotocol;
     }
 
     # TODO cookies
@@ -268,11 +272,18 @@ sub _finalize {
 
     return unless $self->upgrade    && $self->upgrade    eq 'WebSocket';
     return unless $self->connection && $self->connection eq 'Upgrade';
-    return unless $self->origin;
+
+    my $origin = $self->fields->{'Origin'};
+    return unless $origin;
+    $self->origin($origin);
 
     my $host = $self->fields->{'Host'};
     return unless $host;
     $self->host($host);
+
+    my $subprotocol = $self->fields->{'Sec-WebSocket-Protocol'}
+      || $self->fields->{'WebSocket-Protocol'};
+    $self->subprotocol($subprotocol) if $subprotocol;
 
     my $cookie = $self->_build_cookie;
     if (my $cookies = $cookie->parse($self->fields->{Cookie})) {

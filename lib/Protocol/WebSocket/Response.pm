@@ -23,10 +23,8 @@ sub new {
     return $self;
 }
 
-sub origin   { @_ > 1 ? $_[0]->{origin}   = $_[1] : $_[0]->{origin} }
-sub location   { @_ > 1 ? $_[0]->{location}   = $_[1] : $_[0]->{location} }
-sub host   { @_ > 1 ? $_[0]->{host}   = $_[1] : $_[0]->{host} }
-sub secure { @_ > 1 ? $_[0]->{secure} = $_[1] : $_[0]->{secure} }
+sub location { @_ > 1 ? $_[0]->{location} = $_[1] : $_[0]->{location} }
+sub secure   { @_ > 1 ? $_[0]->{secure}   = $_[1] : $_[0]->{secure} }
 
 sub resource_name {
     @_ > 1 ? $_[0]->{resource_name} = $_[1] : $_[0]->{resource_name};
@@ -41,7 +39,7 @@ sub cookie {
 }
 
 sub parse {
-    my $self  = shift;
+    my $self = shift;
 
     return 1 unless defined $_[0];
 
@@ -51,7 +49,7 @@ sub parse {
     $_[0] = '' unless readonly $_[0];
 
     if (length $buffer > $self->{max_response_size}) {
-        $self->error('Request is too big');
+        $self->error('Response is too long');
         return;
     }
 
@@ -140,10 +138,15 @@ sub to_string {
     my $origin = $self->origin ? $self->origin : 'http://' . $location->host;
 
     if ($self->version <= 75) {
+        $string .= 'WebSocket-Protocol: ' . $self->subprotocol . "\x0d\x0a"
+          if defined $self->subprotocol;
         $string .= 'WebSocket-Origin: ' . $origin . "\x0d\x0a";
         $string .= 'WebSocket-Location: ' . $location->to_string . "\x0d\x0a";
     }
     else {
+        $string
+          .= 'Sec-WebSocket-Protocol: ' . $self->subprotocol . "\x0d\x0a"
+          if defined $self->subprotocol;
         $string .= 'Sec-WebSocket-Origin: ' . $origin . "\x0d\x0a";
         $string
           .= 'Sec-WebSocket-Location: ' . $location->to_string . "\x0d\x0a";
@@ -179,6 +182,9 @@ sub _finalize {
 
     $self->origin($self->fields->{'Sec-WebSocket-Origin'}
           || $self->fields->{'WebSocket-Origin'});
+
+    $self->subprotocol($self->fields->{'Sec-WebSocket-Protocol'}
+          || $self->fields->{'WebSocket-Protocol'});
 
     return 1;
 }
