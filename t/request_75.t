@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 74;
+use Test::More tests => 82;
 
 use_ok 'Protocol::WebSocket::Request';
 
@@ -39,6 +39,16 @@ ok $req->parse("Upgrade: WebSocket\x0d\x0a");
 ok $req->parse("Connection: Upgrade\x0d\x0a");
 ok $req->parse("Host: example.com:3000\x0d\x0a");
 ok $req->parse("Origin: null\x0d\x0a");
+ok $req->parse("\x0d\x0a");
+is $req->version => 75;
+is $req->state   => 'done';
+
+$req = Protocol::WebSocket::Request->new;
+ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
+ok $req->parse("UPGRADE: WebSocket\x0d\x0a");
+ok $req->parse("CONNECTION: Upgrade\x0d\x0a");
+ok $req->parse("HOST: example.com:3000\x0d\x0a");
+ok $req->parse("ORIGIN: null\x0d\x0a");
 ok $req->parse("\x0d\x0a");
 is $req->version => 75;
 is $req->state   => 'done';
