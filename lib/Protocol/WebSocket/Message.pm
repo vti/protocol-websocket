@@ -168,7 +168,7 @@ sub _append {
 sub _get_line {
     my $self = shift;
 
-    if ($self->{buffer} =~ s/^(.*?)\x0d\x0a//) {
+    if ($self->{buffer} =~ s/^(.*?)\x0d?\x0a//) {
         return $1;
     }
 
