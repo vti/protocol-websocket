@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 9;
+use Test::More tests => 14;
 
 use_ok 'Protocol::WebSocket::Handshake::Client';
 
@@ -55,3 +55,13 @@ ok $h->parse("HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
       . "fQJ,fN/4F4!~K~MH");
 ok !$h->error;
 ok $h->is_done;
+
+my $message = "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a";
+$h = Protocol::WebSocket::Handshake::Client->new(url => 'ws://example.com');
+ok $h->parse($message);
+is $message => '';
+ok !$h->error;
+
+$h = Protocol::WebSocket::Handshake::Client->new;
+ok !$h->parse("HTTP/1.0 foo bar\x0d\x0a");
+is $h->error => 'Wrong response line';

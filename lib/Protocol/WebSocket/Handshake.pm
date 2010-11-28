@@ -18,7 +18,7 @@ sub new {
 
 sub secure { shift->{secure} }
 
-sub error { shift->{error} }
+sub error { @_ > 1 ? $_[0]->{error} = $_[1] : $_[0]->{error} }
 
 sub req { shift->{req} ||= Protocol::WebSocket::Request->new }
 sub res { shift->{res} ||= Protocol::WebSocket::Response->new }

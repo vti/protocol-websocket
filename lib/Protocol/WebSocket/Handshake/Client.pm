@@ -28,13 +28,12 @@ sub url {
 
 sub parse {
     my $self  = shift;
-    my $chunk = shift;
 
     my $req = $self->req;
     my $res = $self->res;
 
     unless ($res->is_done) {
-        unless ($res->parse($chunk)) {
+        unless ($res->parse($_[0])) {
             $self->error($res->error);
             return;
         }
