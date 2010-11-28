@@ -3,8 +3,10 @@
 use strict;
 use warnings;
 
+BEGIN { use FindBin; use lib "$FindBin::Bin/../lib" }
+
 use IO::Socket::INET;
-use IO::Poll qw/POLLIN/;
+use IO::Poll qw/POLLIN POLLOUT/;
 
 use Protocol::WebSocket::Handshake::Server;
 use Protocol::WebSocket::Frame;
@@ -28,13 +30,15 @@ my $client;
 
 while (1) {
     if ($client = $socket->accept) {
-        $poll->mask($client => POLLIN);
+        $poll->mask($client => POLLIN | POLLOUT);
         last;
     }
 }
 
 my $hs    = Protocol::WebSocket::Handshake::Server->new;
 my $frame = Protocol::WebSocket::Frame->new;
+
+my $buffer = '';
 
 LOOP: while (1) {
     $poll->poll(0.1);
@@ -44,10 +48,13 @@ LOOP: while (1) {
         last LOOP unless $rs;
 
         if (!$hs->is_done) {
-            $hs->parse($chunk);
+            unless (defined $hs->parse($chunk)) {
+                warn "Error: " . $hs->error;
+                last LOOP;
+            }
 
             if ($hs->is_done) {
-                $client->syswrite($hs->to_string);
+                $buffer .= $hs->to_string;
             }
 
             next;
@@ -55,8 +62,15 @@ LOOP: while (1) {
 
         $frame->append($chunk);
 
-        while (my $message = $frame->next) {
-            $client->syswrite($frame->new($message)->to_string);
+        while (defined(my $message = $frame->next)) {
+            $buffer .= $frame->new($message)->to_string;
         }
+    }
+
+    foreach my $writer ($poll->handles(POLLOUT)) {
+        next unless length $buffer;
+
+        my $rs = $writer->syswrite($buffer);
+        substr $buffer, 0, $rs, '';
     }
 }
