@@ -160,8 +160,31 @@ Protocol::WebSocket::Response - WebSocket Response
 =head1 SYNOPSIS
 
     # Constructor
+    $res = Protocol::WebSocket::Response->new(
+        host          => 'example.com',
+        resource_name => '/demo',
+        origin        => 'file://',
+        number1       => 777_007_543,
+        number2       => 114_997_259,
+        challenge     => "\x47\x30\x22\x2D\x5A\x3F\x47\x58"
+    );
+    $res->to_string; # HTTP/1.1 101 WebSocket Protocol Handshake
+                     # Upgrade: WebSocket
+                     # Connection: Upgrade
+                     # Sec-WebSocket-Origin: file://
+                     # Sec-WebSocket-Location: ws://example.com/demo
+                     #
+                     # 0st3Rl&q-2ZU^weu
 
     # Parser
+    $res = Protocol::WebSocket::Response->new;
+    $res->parse("HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a");
+    $res->parse("Upgrade: WebSocket\x0d\x0a");
+    $res->parse("Connection: Upgrade\x0d\x0a");
+    $res->parse("Sec-WebSocket-Origin: file://\x0d\x0a");
+    $res->parse("Sec-WebSocket-Location: ws://example.com/demo\x0d\x0a");
+    $res->parse("\x0d\x0a");
+    $res->parse("0st3Rl&q-2ZU^weu");
 
 =head1 DESCRIPTION
 
@@ -198,5 +221,31 @@ Construct a WebSocket response.
 =head2 C<cookie>
 
 =head2 C<cookies>
+
+=head2 C<key1>
+
+    $self->key1;
+
+Set or get C<Sec-WebSocket-Key1> field.
+
+=head2 C<key2>
+
+    $self->key2;
+
+Set or get C<Sec-WebSocket-Key2> field.
+
+=head2 C<number1>
+
+    $self->number1;
+    $self->number1(123456);
+
+Set or extract from C<Sec-WebSocket-Key1> generated C<number> value.
+
+=head2 C<number2>
+
+    $self->number2;
+    $self->number2(123456);
+
+Set or extract from C<Sec-WebSocket-Key2> generated C<number> value.
 
 =cut

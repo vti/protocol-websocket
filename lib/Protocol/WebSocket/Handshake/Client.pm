@@ -130,10 +130,10 @@ Create a new L<Protocol::WebSocket::Handshake::Client> instance.
 
 =head2 C<parse>
 
-    $handshake->parse;
+    $handshake->parse($buffer);
 
 Parse a WebSocket server response. Returns C<undef> and sets C<error> attribute
-on error.
+on error. Buffer is modified.
 
 =head2 C<to_string>
 

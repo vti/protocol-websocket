@@ -331,8 +331,16 @@ Construct a WebSocket request.
 
 =head2 C<connection>
 
+    $self->connection;
+
+A shortcut for C<$self->field('Connection')>.
+
 =head2 C<cookies>
 
 =head2 C<upgrade>
+
+    $self->upgrade;
+
+A shortcut for C<$self->field('Upgrade')>.
 
 =cut

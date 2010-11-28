@@ -45,6 +45,11 @@ Low level WebSocket response parser and constructor.
 
 Low level WebSocket url parser and constructor.
 
+=head1 EXAMPLES
+
+For examples on how to use L<Protocol::WebSocket> with various event loops see
+C<examples/> directory in the distribution.
+
 =head1 CREDITS
 
 Paul "LeoNerd" Evans
