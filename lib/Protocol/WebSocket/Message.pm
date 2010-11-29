@@ -176,6 +176,8 @@ sub _get_line {
     return;
 }
 
+sub _parse_first_line {shift}
+
 sub _parse_field {
     my $self = shift;
     my $line = shift;
@@ -190,6 +192,8 @@ sub _parse_field {
 
     return $self;
 }
+
+sub _parse_body {shift}
 
 1;
 __END__

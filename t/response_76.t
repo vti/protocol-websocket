@@ -37,15 +37,6 @@ ok $res->is_done;
 is $res->subprotocol => 'sample';
 
 $res = Protocol::WebSocket::Response->new;
-ok $res->parse("HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a");
-ok $res->parse("Upgrade: WebSocket\x0d\x0a");
-ok $res->parse("Connection: Upgrade\x0d\x0a");
-ok $res->parse("Sec-WebSocket-Origin: file://\x0d\x0a");
-ok $res->parse("Sec-WebSocket-Location: ws://example.com/demo\x0d\x0a");
-ok $res->parse("\x0d\x0a0st\x0d\x0al&q-2ZU^weu");
-ok $res->is_done;
-
-$res = Protocol::WebSocket::Response->new;
 my $message =
     "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
   . "Upgrade: WebSocket\x0d\x0a"
