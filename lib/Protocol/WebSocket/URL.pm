@@ -54,6 +54,7 @@ sub to_string {
     $string .= 's' if $self->secure;
     $string .= '://';
     $string .= $self->host;
+    $string .= ':' . $self->port if defined $self->port;
     $string .= $self->resource_name || '/';
 
     return $string;

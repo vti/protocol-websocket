@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 24;
+use Test::More tests => 25;
 
 use_ok 'Protocol::WebSocket::URL';
 
@@ -46,3 +46,9 @@ $url = Protocol::WebSocket::URL->new(
     resource_name => '/demo'
 );
 is $url->to_string => 'ws://foo.com/demo';
+
+$url = Protocol::WebSocket::URL->new(
+    host => 'foo.com',
+    port => 3000
+);
+is $url->to_string => 'ws://foo.com:3000/';
