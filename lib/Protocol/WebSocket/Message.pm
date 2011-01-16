@@ -132,20 +132,10 @@ sub _extract_number {
     my $self = shift;
     my $key  = shift;
 
-    my $number = '';
-    while ($key =~ m/(\d)/g) {
-        $number .= $1;
-    }
-    $number = int($number);
+    my $number = join '' => $key =~ m/\d+/g;
+    my $spaces = $key =~ s/ / /g;
 
-    my $spaces = 0;
-    while ($key =~ m/ /g) {
-        $spaces++;
-    }
-
-    if ($spaces == 0) {
-        return;
-    }
+    return if $spaces == 0;
 
     return int($number / $spaces);
 }
