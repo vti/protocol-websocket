@@ -3,7 +3,9 @@
 use strict;
 use warnings;
 
-use Test::More tests => 82;
+use Test::More tests => 92;
+
+use IO::Handle;
 
 use_ok 'Protocol::WebSocket::Request';
 
@@ -150,3 +152,31 @@ ok $req->parse("Origin: http://example.com\x0d\x0a");
 ok not defined $req->parse("\x0d\x0afoo");
 ok $req->is_state('error');
 is $req->error => 'Leftovers';
+
+$req = Protocol::WebSocket::Request->new_from_psgi();
+ok !$req->is_done;
+
+$req = Protocol::WebSocket::Request->new_from_psgi({});
+ok !$req->is_done;
+
+open my $fh, '<', 't/empty' or die $!;
+my $io = IO::Handle->new;
+$io->fdopen(fileno($fh), "r");
+$req = Protocol::WebSocket::Request->new_from_psgi(
+    {   PATH_INFO               => '/demo',
+        HTTP_UPGRADE            => 'WebSocket',
+        HTTP_CONNECTION         => 'Upgrade',
+        HTTP_HOST               => 'example.com:3000',
+        HTTP_ORIGIN             => 'null',
+        HTTP_WEBSOCKET_PROTOCOL => 'sample'
+    }
+);
+$req->parse($io);
+is $req->subprotocol   => 'sample';
+is $req->resource_name => '/demo';
+is $req->upgrade       => 'WebSocket';
+is $req->connection    => 'Upgrade';
+is $req->host          => 'example.com:3000';
+is $req->origin        => 'null';
+ok $req->is_done;
+is $req->version => 75;

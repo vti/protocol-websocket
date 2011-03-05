@@ -44,15 +44,17 @@ sub _number {
 sub key1 { @_ > 1 ? $_[0]->{key1} = $_[1] : $_[0]->{key1} }
 sub key2 { @_ > 1 ? $_[0]->{key2} = $_[1] : $_[0]->{key2} }
 
-sub to_string {
+sub status {
+    return '101';
+}
+
+sub headers {
     my $self = shift;
 
-    my $string = '';
+    my $headers = [];
 
-    $string .= "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a";
-
-    $string .= "Upgrade: WebSocket\x0d\x0a";
-    $string .= "Connection: Upgrade\x0d\x0a";
+    push @$headers, Upgrade => 'WebSocket';
+    push @$headers, Connection => 'Upgrade';
 
     Carp::croak(qq/host is required/) unless defined $self->host;
 
@@ -64,29 +66,51 @@ sub to_string {
     my $origin = $self->origin ? $self->origin : 'http://' . $location->host;
 
     if ($self->version <= 75) {
-        $string .= 'WebSocket-Protocol: ' . $self->subprotocol . "\x0d\x0a"
+        push @$headers, 'WebSocket-Protocol' => $self->subprotocol
           if defined $self->subprotocol;
-        $string .= 'WebSocket-Origin: ' . $origin . "\x0d\x0a";
-        $string .= 'WebSocket-Location: ' . $location->to_string . "\x0d\x0a";
+        push @$headers, 'WebSocket-Origin'   => $origin;
+        push @$headers, 'WebSocket-Location' => $location->to_string;
     }
     else {
-        $string
-          .= 'Sec-WebSocket-Protocol: ' . $self->subprotocol . "\x0d\x0a"
+        push @$headers, 'Sec-WebSocket-Protocol' => $self->subprotocol
           if defined $self->subprotocol;
-        $string .= 'Sec-WebSocket-Origin: ' . $origin . "\x0d\x0a";
-        $string
-          .= 'Sec-WebSocket-Location: ' . $location->to_string . "\x0d\x0a";
+        push @$headers, 'Sec-WebSocket-Origin' => $origin;
+        push @$headers, 'Sec-WebSocket-Location' => $location->to_string;
     }
 
     if (@{$self->cookies}) {
-        $string .= 'Set-Cookie: ';
-        $string .= join ',' => $_->to_string for @{$self->cookies};
-        $string .= "\x0d\x0a";
+        my $cookie = join ',' => map { $_->to_string } @{$self->cookies};
+        push @$headers, 'Set-Cookie' => $cookie;
+    }
+
+    return $headers;
+}
+
+sub body {
+    my $self = shift;
+
+    return $self->checksum if $self->version > 75;
+
+    return '';
+}
+
+sub to_string {
+    my $self = shift;
+
+    my $string = '';
+
+    $string .= "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a";
+
+    for (my $i = 0; $i < @{$self->headers}; $i += 2) {
+        my $key   = $self->headers->[$i];
+        my $value = $self->headers->[$i + 1];
+
+        $string .= "$key: $value\x0d\x0a";
     }
 
     $string .= "\x0d\x0a";
 
-    $string .= $self->checksum if $self->version > 75;
+    $string .= $self->body;
 
     return $string;
 }

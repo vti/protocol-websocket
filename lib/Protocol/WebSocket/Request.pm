@@ -9,6 +9,40 @@ use Protocol::WebSocket::Cookie::Request;
 
 require Carp;
 
+sub new_from_psgi {
+    my $class = shift;
+    my $env = @_ > 1 ? {@_} : shift;
+
+    my $fields = {
+        upgrade    => $env->{HTTP_UPGRADE},
+        connection => $env->{HTTP_CONNECTION},
+        host       => $env->{HTTP_HOST},
+        origin     => $env->{HTTP_ORIGIN}
+    };
+
+    if ($env->{HTTP_WEBSOCKET_PROTOCOL}) {
+        $fields->{'websocket-protocol'} =
+          $env->{HTTP_WEBSOCKET_PROTOCOL};
+    }
+    if ($env->{HTTP_SEC_WEBSOCKET_PROTOCOL}) {
+        $fields->{'sec-websocket-protocol'} =
+          $env->{HTTP_SEC_WEBSOCKET_PROTOCOL};
+    }
+
+    if ($env->{HTTP_SEC_WEBSOCKET_KEY1}) {
+        $fields->{'sec-websocket-key1'} = $env->{HTTP_SEC_WEBSOCKET_KEY1};
+        $fields->{'sec-websocket-key2'} = $env->{HTTP_SEC_WEBSOCKET_KEY2};
+    }
+
+    my $self = $class->new(
+        fields        => $fields,
+        resource_name => $env->{PATH_INFO} || '/'
+    );
+    $self->state('body');
+
+    return $self;
+}
+
 sub cookies { shift->{cookies} }
 
 sub resource_name {
@@ -319,9 +353,21 @@ Construct or parse a WebSocket request.
 
 Create a new L<Protocol::WebSocket::Request> instance.
 
+=head2 C<new_from_psgi>
+
+    my $env = {
+        HTTP_HOST => 'example.com',
+        HTTP_CONNECTION => 'Upgrade',
+        ...
+    };
+    my $req = Protocol::WebSocket::Request->new_from_psgi($env);
+
+Create a new L<Protocol::WebSocket::Request> instance from L<PSGI> environment.
+
 =head2 C<parse>
 
     $req->parse($buffer);
+    $req->parse($handle);
 
 Parse a WebSocket request. Incoming buffer is modified.
 

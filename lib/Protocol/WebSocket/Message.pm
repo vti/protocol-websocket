@@ -124,7 +124,7 @@ sub parse {
     # Need more data
     return $rv unless ref $rv;
 
-    $_[0] = $self->{buffer} unless readonly $_[0];
+    $_[0] = $self->{buffer} unless readonly $_[0] || ref $_[0];
     return $self->done;
 }
 
@@ -145,7 +145,7 @@ sub _append {
 
     return if $self->error;
 
-    if (blessed($_[0]) && $_[0]->isa('IO::Handle')) {
+    if (ref $_[0]) {
         $_[0]->read(my $buf, $self->{max_message_size});
         $self->{buffer} .= $buf;
     }

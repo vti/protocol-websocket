@@ -3,7 +3,9 @@
 use strict;
 use warnings;
 
-use Test::More tests => 54;
+use Test::More tests => 66;
+
+use IO::Handle;
 
 use_ok 'Protocol::WebSocket::Request';
 
@@ -122,3 +124,36 @@ ok $req->number2;
 ok $req->key2;
 is length($req->challenge) => 8;
 is length($req->checksum)  => 16;
+
+$req = Protocol::WebSocket::Request->new_from_psgi();
+ok !$req->is_done;
+
+$req = Protocol::WebSocket::Request->new_from_psgi({});
+ok !$req->is_done;
+
+open my $fh, '<', 't/challenge' or die $!;
+my $io = IO::Handle->new;
+$io->fdopen(fileno($fh), "r");
+$req = Protocol::WebSocket::Request->new_from_psgi(
+    {   PATH_INFO                   => '/demo',
+        HTTP_UPGRADE                => 'WebSocket',
+        HTTP_CONNECTION             => 'Upgrade',
+        HTTP_HOST                   => 'example.com',
+        HTTP_ORIGIN                 => 'http://example.com',
+        HTTP_SEC_WEBSOCKET_PROTOCOL => 'sample',
+        HTTP_SEC_WEBSOCKET_KEY1     => '18x 6]8vM;54 *(5:  {   U1]8  z [  8',
+        HTTP_SEC_WEBSOCKET_KEY2     => '1_ tx7X d  <  nw  334J702) 7]o}` 0',
+        HTTP_CONTENT_LENGTH         => 8
+    }
+);
+$req->parse($io);
+is $req->resource_name => '/demo';
+is $req->subprotocol   => 'sample';
+is $req->upgrade       => 'WebSocket';
+is $req->connection    => 'Upgrade';
+is $req->host          => 'example.com';
+is $req->origin        => 'http://example.com';
+is $req->key1          => '18x 6]8vM;54 *(5:  {   U1]8  z [  8';
+is $req->key2          => '1_ tx7X d  <  nw  334J702) 7]o}` 0';
+ok $req->is_done;
+is $req->version => 76;
