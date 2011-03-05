@@ -3,7 +3,9 @@
 use strict;
 use warnings;
 
-use Test::More tests => 8;
+use Test::More tests => 9;
+
+use IO::Handle;
 
 use_ok 'Protocol::WebSocket::Message';
 
@@ -16,4 +18,12 @@ ok $m->parse("Connection: Upgrade\x0d\x0a");
 ok $m->parse("Sec-WebSocket-Origin: file://\x0d\x0a");
 ok $m->parse("Sec-WebSocket-Location: ws://example.com/demo\x0d\x0a");
 ok $m->parse("\x0d\x0a0st\x0d\x0al&q-2ZU^weu");
+ok $m->is_done;
+
+open my $fh, '<', 't/message' or die $!;
+my $io = IO::Handle->new;
+$io->fdopen(fileno($fh), "r");
+
+$m = Protocol::WebSocket::Message->new;
+$m->parse($io);
 ok $m->is_done;

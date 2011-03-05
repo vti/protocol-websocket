@@ -1,0 +1,11 @@
+GET /demo HTTP/1.1
+Upgrade: WebSocket
+Connection: Upgrade
+Host: example.com
+Origin: http://example.com
+Sec-WebSocket-Protocol: sample
+Sec-WebSocket-Key1: 18x 6]8vM;54 *(5:  {   U1]8  z [  8
+Sec-WebSocket-Key2: 1_ tx7X d  <  nw  334J702) 7]o}` 0
+Content-Length: 8
+
+Tm[K T2u

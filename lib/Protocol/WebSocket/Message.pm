@@ -5,7 +5,7 @@ use warnings;
 
 use base 'Protocol::WebSocket::Stateful';
 
-use Scalar::Util 'readonly';
+use Scalar::Util qw(readonly blessed);
 require Digest::MD5;
 
 sub new {
@@ -145,8 +145,14 @@ sub _append {
 
     return if $self->error;
 
-    $self->{buffer} .= $_[0];
-    $_[0] = '' unless readonly $_[0];
+    if (blessed($_[0]) && $_[0]->isa('IO::Handle')) {
+        $_[0]->read(my $buf, $self->{max_message_size});
+        $self->{buffer} .= $buf;
+    }
+    else {
+        $self->{buffer} .= $_[0];
+        $_[0] = '' unless readonly $_[0];
+    }
 
     if (length $self->{buffer} > $self->{max_message_size}) {
         $self->error('Message is too long');
