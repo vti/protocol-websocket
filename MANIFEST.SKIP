@@ -3,3 +3,7 @@
 .*\.old$
 ^Makefile$
 ^\.git
+.swp$
+README.pod
+MANIFEST.bak
+.tar.gz$
