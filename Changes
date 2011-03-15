@@ -2,6 +2,7 @@ Revision history for perl module Protocol::WebSocket
 
 0.00901 2011-03-15
 
+ - Added X-Forwarded-Proto header support
  - Fixed SSL
  - Fixed POD
  - Separated unit tests from author tests
