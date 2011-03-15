@@ -1,0 +1,33 @@
+Revision history for perl module Protocol::WebSocket
+
+0.00901 2011-03-15
+
+ - Fixed SSL
+ - Fixed POD
+ - Separated unit tests from author tests
+
+0.00900 2011-03-08
+
+ - Added Nginx::Engine example
+ - Added possibility to read directly from IO::Handle
+ - Added PSGI support
+
+0.0004 2010-11-30
+
+ - Fixed message parsing
+ - Fixed port
+ - Refactored tests
+
+0.0003 2010-11-28
+
+ - Added examples
+ - Added subprotocol parsing and improved tests
+ - Fixed handshake parsing and error passing
+ - Improved docs
+ - Improved tests
+ - Made parser more relax
+ - Made poll example more robust
+
+0.0002 2010-11-26
+
+ - Initial release
