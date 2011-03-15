@@ -5,7 +5,7 @@ use warnings;
 
 use base 'Protocol::WebSocket::Stateful';
 
-use Scalar::Util qw(readonly blessed);
+use Scalar::Util qw(readonly);
 require Digest::MD5;
 
 sub new {
@@ -211,6 +211,16 @@ L<Protocol::WebSocket::Response>.
 
 =head2 C<fields>
 
+=head2 C<field>
+
+=head2 C<host>
+
+=head2 C<origin>
+
+=head2 C<secure>
+
+=head2 C<subprotocol>
+
 =head2 C<error>
 
 =head2 C<number1>
@@ -226,5 +236,7 @@ L<Protocol::WebSocket::Response>.
 Create a new L<Protocol::WebSocket::Message> instance.
 
 =head2 C<checksum>
+
+=head2 C<parse>
 
 =cut

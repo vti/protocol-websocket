@@ -97,9 +97,10 @@ sub body {
 sub to_string {
     my $self = shift;
 
-    my $string = '';
+    my $status = $self->status;
 
-    $string .= "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a";
+    my $string = '';
+    $string .= "HTTP/1.1 $status WebSocket Protocol Handshake\x0d\x0a";
 
     for (my $i = 0; $i < @{$self->headers}; $i += 2) {
         my $key   = $self->headers->[$i];
@@ -118,7 +119,8 @@ sub to_string {
 sub _parse_first_line {
     my ($self, $line) = @_;
 
-    unless ($line eq 'HTTP/1.1 101 WebSocket Protocol Handshake') {
+    my $status = $self->status;
+    unless ($line eq "HTTP/1.1 $status WebSocket Protocol Handshake") {
         $self->error('Wrong response line');
         return;
     }
@@ -271,5 +273,23 @@ Set or extract from C<Sec-WebSocket-Key1> generated C<number> value.
     $self->number2(123456);
 
 Set or extract from C<Sec-WebSocket-Key2> generated C<number> value.
+
+=head2 C<status>
+
+    $self->status;
+
+Get response status (101).
+
+=head2 C<body>
+
+    $self->body;
+
+Get response body.
+
+=head2 C<headers>
+
+    my $arrayref = $self->headers;
+
+Get response headers.
 
 =cut
