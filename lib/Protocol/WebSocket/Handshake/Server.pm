@@ -34,7 +34,7 @@ sub parse {
     $res->version($req->version);
     $res->host($req->host);
 
-    #$res->secure($req->secure);
+    $res->secure($req->secure);
     $res->resource_name($req->resource_name);
     $res->origin($req->origin);
 

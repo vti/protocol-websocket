@@ -39,7 +39,7 @@ $res->secure(1);
 is $res->to_string => "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
   . "Upgrade: WebSocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
-  . "WebSocket-Origin: http://example.com\x0d\x0a"
+  . "WebSocket-Origin: https://example.com\x0d\x0a"
   . "WebSocket-Location: wss://example.com/\x0d\x0a"
   . "\x0d\x0a";
 

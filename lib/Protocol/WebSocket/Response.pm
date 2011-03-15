@@ -11,7 +11,6 @@ use Protocol::WebSocket::Cookie::Response;
 require Carp;
 
 sub location { @_ > 1 ? $_[0]->{location} = $_[1] : $_[0]->{location} }
-sub secure   { @_ > 1 ? $_[0]->{secure}   = $_[1] : $_[0]->{secure} }
 
 sub resource_name {
     @_ > 1 ? $_[0]->{resource_name} = $_[1] : $_[0]->{resource_name};
@@ -64,6 +63,7 @@ sub headers {
         resource_name => $self->resource_name,
     );
     my $origin = $self->origin ? $self->origin : 'http://' . $location->host;
+    $origin =~ s{^http:}{https:} if $self->secure;
 
     if ($self->version <= 75) {
         push @$headers, 'WebSocket-Protocol' => $self->subprotocol

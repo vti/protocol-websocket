@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 92;
+use Test::More tests => 101;
 
 use IO::Handle;
 
@@ -95,6 +95,16 @@ is $req->cookies->[0]->version => 1;
 is $req->cookies->[0]->name    => 'foo';
 is $req->cookies->[0]->value   => 'bar';
 
+$req = Protocol::WebSocket::Request->new;
+ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
+ok $req->parse("Upgrade: WebSocket\x0d\x0a");
+ok $req->parse("Connection: Upgrade\x0d\x0a");
+ok $req->parse("Host: example.com\x0d\x0a");
+ok $req->parse("Origin: https://example.com\x0d\x0a");
+ok $req->parse("\x0d\x0a");
+ok $req->is_done;
+ok $req->secure;
+
 $req = Protocol::WebSocket::Request->new(
     version       => 75,
     host          => 'example.com',
@@ -131,6 +141,19 @@ is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: example.com\x0d\x0a"
   . "Origin: http://example.com\x0d\x0a"
+  . "\x0d\x0a";
+
+$req = Protocol::WebSocket::Request->new(
+    secure        => 1,
+    version       => 75,
+    host          => 'example.com',
+    resource_name => '/demo'
+);
+is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
+  . "Upgrade: WebSocket\x0d\x0a"
+  . "Connection: Upgrade\x0d\x0a"
+  . "Host: example.com\x0d\x0a"
+  . "Origin: https://example.com\x0d\x0a"
   . "\x0d\x0a";
 
 $req = Protocol::WebSocket::Request->new;

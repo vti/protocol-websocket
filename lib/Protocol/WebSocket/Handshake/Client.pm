@@ -60,6 +60,8 @@ sub _set_url {
 
     $url = $self->_build_url->parse($url) unless ref $url;
 
+    $self->req->secure(1) if $url->secure;
+
     my $req = $self->req;
 
     my $host = $url->host;

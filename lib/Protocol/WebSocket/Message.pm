@@ -30,6 +30,8 @@ sub new {
     return $self;
 }
 
+sub secure { @_ > 1 ? $_[0]->{secure} = $_[1] : $_[0]->{secure} }
+
 sub fields { shift->{fields} }
 
 sub field {
