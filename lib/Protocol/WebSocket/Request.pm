@@ -40,6 +40,12 @@ sub new_from_psgi {
     );
     $self->state('body');
 
+    if (   $env->{HTTP_X_FORWARDED_PROTO}
+        && $env->{HTTP_X_FORWARDED_PROTO} eq 'https')
+    {
+        $self->secure(1);
+    }
+
     return $self;
 }
 

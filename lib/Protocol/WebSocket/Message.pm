@@ -188,6 +188,10 @@ sub _parse_field {
 
     $self->field($name => $value);
 
+    if ($name =~ m/^x-forwarded-proto$/i) {
+        $self->secure(1);
+    }
+
     return $self;
 }
 

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 101;
+use Test::More tests => 104;
 
 use IO::Handle;
 
@@ -94,6 +94,17 @@ ok $req->is_done;
 is $req->cookies->[0]->version => 1;
 is $req->cookies->[0]->name    => 'foo';
 is $req->cookies->[0]->value   => 'bar';
+
+$req = Protocol::WebSocket::Request->new;
+$req->parse("GET /demo HTTP/1.1\x0d\x0a");
+$req->parse("Upgrade: WebSocket\x0d\x0a");
+$req->parse("Connection: Upgrade\x0d\x0a");
+$req->parse("Host: example.com\x0d\x0a");
+$req->parse("Origin: null\x0d\x0a");
+$req->parse("X-Forwarded-Proto: https\x0d\x0a");
+$req->parse("\x0d\x0a");
+ok $req->is_done;
+ok $req->secure;
 
 $req = Protocol::WebSocket::Request->new;
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
@@ -203,3 +214,16 @@ is $req->host          => 'example.com:3000';
 is $req->origin        => 'null';
 ok $req->is_done;
 is $req->version => 75;
+
+$req = Protocol::WebSocket::Request->new_from_psgi(
+    {   PATH_INFO               => '/demo',
+        HTTP_UPGRADE            => 'WebSocket',
+        HTTP_CONNECTION         => 'Upgrade',
+        HTTP_HOST               => 'example.com:3000',
+        HTTP_ORIGIN             => 'null',
+        HTTP_WEBSOCKET_PROTOCOL => 'sample',
+        HTTP_X_FORWARDED_PROTO  => 'https'
+    }
+);
+$req->parse($io);
+ok $req->secure;
