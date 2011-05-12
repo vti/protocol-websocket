@@ -33,15 +33,30 @@ sub append {
 sub next {
     my $self = shift;
 
+    my $bytes = $self->next_bytes;
+    return unless defined $bytes;
+
+    return Encode::decode_utf8($bytes);
+}
+
+sub next_bytes {
+    my $self = shift;
+
     return unless $self->{buffer} =~ s/^[^\x00]*\x00(.*?)\xff//s;
 
-    return Encode::decode_utf8($1);
+    return $1;
+}
+
+sub to_bytes {
+    my $self = shift;
+
+    return "\x00" . Encode::encode_utf8($self->{buffer}) . "\xff";
 }
 
 sub to_string {
     my $self = shift;
 
-    return "\x00" . Encode::encode_utf8($self->{buffer}) . "\xff";
+    return "\x00" . $self->{buffer} . "\xff";
 }
 
 1;
@@ -85,16 +100,24 @@ Append a frame chunk.
     $frame->append("\x00foo");
     $frame->append("\xff\x00bar\xff");
 
-    $fram->next; # foo
-    $fram->next; # bar
+    $frame->next; # foo
+    $frame->next; # bar
 
-Return the next frame.
+Return the next frame as a Perl string.
+
+=head2 C<next_bytes>
+
+Return the next frame as a UTF-8 encoded string.
 
 =head2 C<to_string>
 
     my $frame = Protocol::WebSocket::Frame->new('foo');
     $frame->to_string; # \x00foo\xff
 
-Construct a WebSocket frame.
+Construct a WebSocket frame as a Perl string.
+
+=head2 C<to_bytes>
+
+Construct a WebSocket frame as a UTF-8 encoded string.
 
 =cut

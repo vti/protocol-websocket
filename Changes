@@ -2,6 +2,8 @@ Revision history for perl module Protocol::WebSocket
 
 0.00902 2011-05-12
 
+ - API CHANGE: Frame's to_string now returns a Perl string, use to_bytes to get a
+   UTF-8 encoded octets
  - Pay attention to SCRIPT_NAME in PSGI
 
 0.00901 2011-03-15
