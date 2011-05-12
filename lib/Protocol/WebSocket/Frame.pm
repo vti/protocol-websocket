@@ -3,7 +3,7 @@ package Protocol::WebSocket::Frame;
 use strict;
 use warnings;
 
-use Encode;
+use Encode ();
 use Scalar::Util 'readonly';
 
 sub new {
@@ -14,7 +14,8 @@ sub new {
     my $self = {@_};
     bless $self, $class;
 
-    $self->{buffer} = defined $buffer ? $buffer : '';
+    $buffer = '' unless defined $buffer;
+    $self->{buffer} = Encode::encode('UTF_8', $buffer);
 
     return $self;
 }
@@ -36,7 +37,7 @@ sub next {
     my $bytes = $self->next_bytes;
     return unless defined $bytes;
 
-    return Encode::decode_utf8($bytes);
+    return Encode::decode('UTF-8', $bytes);
 }
 
 sub next_bytes {
@@ -50,13 +51,13 @@ sub next_bytes {
 sub to_bytes {
     my $self = shift;
 
-    return "\x00" . Encode::encode_utf8($self->{buffer}) . "\xff";
+    return "\x00" . $self->{buffer} . "\xff";
 }
 
 sub to_string {
     my $self = shift;
 
-    return "\x00" . $self->{buffer} . "\xff";
+    return "\x00" . Encode::decode('UTF-8', $self->{buffer}) . "\xff";
 }
 
 1;
