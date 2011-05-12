@@ -15,7 +15,13 @@ sub new {
     bless $self, $class;
 
     $buffer = '' unless defined $buffer;
-    $self->{buffer} = Encode::encode('UTF_8', $buffer);
+
+    if (Encode::is_utf8($buffer)) {
+        $self->{buffer} = Encode::encode('UTF_8', $buffer);
+    }
+    else {
+        $self->{buffer} = $buffer;
+    }
 
     return $self;
 }

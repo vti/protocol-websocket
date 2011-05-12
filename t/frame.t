@@ -5,7 +5,7 @@ use warnings;
 
 use utf8;
 
-use Test::More tests => 25;
+use Test::More tests => 26;
 
 use Encode;
 
@@ -63,6 +63,9 @@ $f = Protocol::WebSocket::Frame->new('123');
 is $f->to_string => "\x00123\xff";
 
 $f = Protocol::WebSocket::Frame->new('☺');
+is $f->to_string => "\x00" . "☺" . "\xff";
+
+$f = Protocol::WebSocket::Frame->new(Encode::encode_utf8('☺'));
 is $f->to_string => "\x00" . "☺" . "\xff";
 
 # We pass characters, but send bytes
