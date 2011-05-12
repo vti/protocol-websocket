@@ -13,6 +13,8 @@ sub new_from_psgi {
     my $class = shift;
     my $env = @_ > 1 ? {@_} : shift;
 
+    Carp::croak('env is required') unless keys %$env;
+
     my $fields = {
         upgrade    => $env->{HTTP_UPGRADE},
         connection => $env->{HTTP_CONNECTION},
@@ -36,7 +38,7 @@ sub new_from_psgi {
 
     my $self = $class->new(
         fields        => $fields,
-        resource_name => $env->{PATH_INFO} || '/'
+        resource_name => "$env->{SCRIPT_NAME}$env->{PATH_INFO}"
     );
     $self->state('body');
 

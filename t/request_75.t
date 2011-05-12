@@ -131,7 +131,7 @@ is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
 $req = Protocol::WebSocket::Request->new(
     version       => 75,
     host          => 'example.com',
-    subprotocol => 'sample',
+    subprotocol   => 'sample',
     resource_name => '/demo'
 );
 is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
@@ -187,17 +187,18 @@ ok not defined $req->parse("\x0d\x0afoo");
 ok $req->is_state('error');
 is $req->error => 'Leftovers';
 
-$req = Protocol::WebSocket::Request->new_from_psgi();
-ok !$req->is_done;
+eval { Protocol::WebSocket::Request->new_from_psgi() };
+ok $@;
 
-$req = Protocol::WebSocket::Request->new_from_psgi({});
-ok !$req->is_done;
+eval { Protocol::WebSocket::Request->new_from_psgi({}) };
+ok $@;
 
 open my $fh, '<', 't/empty' or die $!;
 my $io = IO::Handle->new;
 $io->fdopen(fileno($fh), "r");
 $req = Protocol::WebSocket::Request->new_from_psgi(
-    {   PATH_INFO               => '/demo',
+    {   SCRIPT_NAME             => '',
+        PATH_INFO               => '/demo',
         HTTP_UPGRADE            => 'WebSocket',
         HTTP_CONNECTION         => 'Upgrade',
         HTTP_HOST               => 'example.com:3000',
@@ -216,7 +217,8 @@ ok $req->is_done;
 is $req->version => 75;
 
 $req = Protocol::WebSocket::Request->new_from_psgi(
-    {   PATH_INFO               => '/demo',
+    {   SCRIPT_NAME             => '',
+        PATH_INFO               => '/demo',
         HTTP_UPGRADE            => 'WebSocket',
         HTTP_CONNECTION         => 'Upgrade',
         HTTP_HOST               => 'example.com:3000',

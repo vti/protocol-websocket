@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 66;
+use Test::More tests => 64;
 
 use IO::Handle;
 
@@ -125,17 +125,12 @@ ok $req->key2;
 is length($req->challenge) => 8;
 is length($req->checksum)  => 16;
 
-$req = Protocol::WebSocket::Request->new_from_psgi();
-ok !$req->is_done;
-
-$req = Protocol::WebSocket::Request->new_from_psgi({});
-ok !$req->is_done;
-
 open my $fh, '<', 't/challenge' or die $!;
 my $io = IO::Handle->new;
 $io->fdopen(fileno($fh), "r");
 $req = Protocol::WebSocket::Request->new_from_psgi(
-    {   PATH_INFO                   => '/demo',
+    {   SCRIPT_NAME                 => '',
+        PATH_INFO                   => '/demo',
         HTTP_UPGRADE                => 'WebSocket',
         HTTP_CONNECTION             => 'Upgrade',
         HTTP_HOST                   => 'example.com',
