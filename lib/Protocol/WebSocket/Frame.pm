@@ -93,7 +93,8 @@ Construct or parse a WebSocket frame.
 
 =head2 C<new>
 
-Create a new L<Protocol::WebSocket::Frame> instance.
+Create a new L<Protocol::WebSocket::Frame> instance. Automatically detect if the
+passed data is a Perl string or bytes.
 
 =head2 C<append>
 
