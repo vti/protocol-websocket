@@ -63,7 +63,7 @@ sub headers {
         resource_name => $self->resource_name,
     );
     my $origin = $self->origin ? $self->origin : 'http://' . $location->host;
-    $origin =~ s{^http:}{https:} if $self->secure;
+    $origin =~ s{^http:}{https:} if !$self->origin && $self->secure;
 
     if ($self->version <= 75) {
         push @$headers, 'WebSocket-Protocol' => $self->subprotocol
