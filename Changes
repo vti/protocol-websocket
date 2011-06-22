@@ -6,6 +6,7 @@ Revision history for perl module Protocol::WebSocket
    UTF-8 encoded octets
  - Automatically decode when building frame from a Perl string
  - Pay attention to SCRIPT_NAME in PSGI
+ - If an origin was passed in, don't change it (Jon Gentle)
 
 0.00901 2011-03-15
 
