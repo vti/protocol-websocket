@@ -38,7 +38,8 @@ sub new_from_psgi {
 
     my $self = $class->new(
         fields        => $fields,
-        resource_name => "$env->{SCRIPT_NAME}$env->{PATH_INFO}"
+        resource_name => "$env->{SCRIPT_NAME}$env->{PATH_INFO}".
+                         ($env->{QUERY_STRING} ? "?$env->{QUERY_STRING}" : "")
     );
     $self->state('body');
 
