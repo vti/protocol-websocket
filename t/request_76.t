@@ -131,6 +131,7 @@ $io->fdopen(fileno($fh), "r");
 $req = Protocol::WebSocket::Request->new_from_psgi(
     {   SCRIPT_NAME                 => '',
         PATH_INFO                   => '/demo',
+        QUERY_STRING                => 'foo=bar',
         HTTP_UPGRADE                => 'WebSocket',
         HTTP_CONNECTION             => 'Upgrade',
         HTTP_HOST                   => 'example.com',
@@ -142,7 +143,7 @@ $req = Protocol::WebSocket::Request->new_from_psgi(
     }
 );
 $req->parse($io);
-is $req->resource_name => '/demo';
+is $req->resource_name => '/demo?foo=bar';
 is $req->subprotocol   => 'sample';
 is $req->upgrade       => 'WebSocket';
 is $req->connection    => 'Upgrade';
