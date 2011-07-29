@@ -44,7 +44,7 @@ sub new_from_psgi {
     }
 
     if ($version eq 'draft-ietf-hybi-10') {
-        $fields->{'sec-websocket-origin'} = $env->{HTTP_ORIGIN};
+        $fields->{'sec-websocket-origin'} = $env->{HTTP_SEC_WEBSOCKET_ORIGIN};
     }
     else {
         $fields->{origin} = $env->{HTTP_ORIGIN};

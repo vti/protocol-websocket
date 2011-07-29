@@ -64,7 +64,7 @@ $req = Protocol::WebSocket::Request->new_from_psgi(
         HTTP_UPGRADE                => 'websocket',
         HTTP_CONNECTION             => 'Upgrade',
         HTTP_HOST                   => 'server.example.com',
-        HTTP_ORIGIN                 => 'http://example.com',
+        HTTP_SEC_WEBSOCKET_ORIGIN   => 'http://example.com',
         HTTP_SEC_WEBSOCKET_PROTOCOL => 'chat, superchat',
         HTTP_SEC_WEBSOCKET_KEY      => 'dGhlIHNhbXBsZSBub25jZQ==',
         HTTP_SEC_WEBSOCKET_VERSION  => 8

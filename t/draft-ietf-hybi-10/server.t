@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 14;
+use Test::More tests => 15;
 
 use_ok 'Protocol::WebSocket::Handshake::Server';
 
@@ -19,6 +19,7 @@ ok $h->parse("Connection: Upgrade\x0d\x0a");
 ok $h->parse("Host: example.com\x0d\x0a");
 ok $h->parse("Sec-WebSocket-Origin: http://example.com\x0d\x0a");
 ok $h->parse("Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\x0d\x0a");
+ok $h->parse("Sec-WebSocket-Version: 8\x0d\x0a");
 ok $h->parse("\x0d\x0a");
 ok !$h->error;
 ok $h->is_done;
