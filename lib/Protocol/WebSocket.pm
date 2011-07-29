@@ -52,7 +52,13 @@ C<examples/> directory in the distribution.
 
 =head1 CREDITS
 
+In order of appearance:
+
 Paul "LeoNerd" Evans
+
+Jon Gentle
+
+Lee Aylward
 
 =head1 AUTHOR
 
