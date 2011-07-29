@@ -5,9 +5,10 @@ use warnings;
 
 use base 'Protocol::WebSocket::Message';
 
-use Protocol::WebSocket::Cookie::Request;
-
 require Carp;
+use MIME::Base64 ();
+
+use Protocol::WebSocket::Cookie::Request;
 
 sub new_from_psgi {
     my $class = shift;
@@ -15,31 +16,45 @@ sub new_from_psgi {
 
     Carp::croak('env is required') unless keys %$env;
 
+    my $version = '';
+
     my $fields = {
         upgrade    => $env->{HTTP_UPGRADE},
         connection => $env->{HTTP_CONNECTION},
         host       => $env->{HTTP_HOST},
-        origin     => $env->{HTTP_ORIGIN}
     };
 
     if ($env->{HTTP_WEBSOCKET_PROTOCOL}) {
         $fields->{'websocket-protocol'} =
           $env->{HTTP_WEBSOCKET_PROTOCOL};
     }
-    if ($env->{HTTP_SEC_WEBSOCKET_PROTOCOL}) {
+    elsif ($env->{HTTP_SEC_WEBSOCKET_PROTOCOL}) {
         $fields->{'sec-websocket-protocol'} =
           $env->{HTTP_SEC_WEBSOCKET_PROTOCOL};
     }
 
-    if ($env->{HTTP_SEC_WEBSOCKET_KEY1}) {
+    if ($env->{HTTP_SEC_WEBSOCKET_KEY}) {
+        $version = 'draft-ietf-hybi-10';
+        $fields->{'sec-websocket-key'} = $env->{HTTP_SEC_WEBSOCKET_KEY};
+    }
+    elsif ($env->{HTTP_SEC_WEBSOCKET_KEY1}) {
+        $version = 'draft-ietf-hybi-00';
         $fields->{'sec-websocket-key1'} = $env->{HTTP_SEC_WEBSOCKET_KEY1};
         $fields->{'sec-websocket-key2'} = $env->{HTTP_SEC_WEBSOCKET_KEY2};
     }
 
+    if ($version eq 'draft-ietf-hybi-10') {
+        $fields->{'sec-websocket-origin'} = $env->{HTTP_ORIGIN};
+    }
+    else {
+        $fields->{origin} = $env->{HTTP_ORIGIN};
+    }
+
     my $self = $class->new(
+        version       => $version,
         fields        => $fields,
-        resource_name => "$env->{SCRIPT_NAME}$env->{PATH_INFO}".
-                         ($env->{QUERY_STRING} ? "?$env->{QUERY_STRING}" : "")
+        resource_name => "$env->{SCRIPT_NAME}$env->{PATH_INFO}"
+          . ($env->{QUERY_STRING} ? "?$env->{QUERY_STRING}" : "")
     );
     $self->state('body');
 
@@ -64,11 +79,14 @@ sub connection { shift->field('Connection') }
 sub number1 { shift->_number('number1', 'key1', @_) }
 sub number2 { shift->_number('number2', 'key2', @_) }
 
+sub key  { shift->_key('key'  => @_) }
 sub key1 { shift->_key('key1' => @_) }
 sub key2 { shift->_key('key2' => @_) }
 
 sub to_string {
     my $self = shift;
+
+    my $version = $self->version || 'draft-ietf-hybi-10';
 
     my $string = '';
 
@@ -84,9 +102,34 @@ sub to_string {
 
     my $origin = $self->origin ? $self->origin : 'http://' . $self->host;
     $origin =~ s{^http:}{https:} if $self->secure;
-    $string .= "Origin: " . $origin . "\x0d\x0a";
+    $string .= (
+        $version eq 'draft-ietf-hybi-10'
+        ? "Sec-WebSocket-Origin"
+        : "Origin"
+      )
+      . ': '
+      . $origin
+      . "\x0d\x0a";
 
-    if ($self->version eq 'draft-ietf-hybi-00') {
+    if ($version eq 'draft-ietf-hybi-10') {
+        my $key = $self->key;
+
+        if (!$key) {
+            $key = '';
+            $key .= chr(int(rand(256))) for 1 .. 16;
+
+            $key = MIME::Base64::encode_base64($key);
+            $key =~ s{\s+}{}g;
+        }
+
+        $string
+          .= 'Sec-WebSocket-Protocol: ' . $self->subprotocol . "\x0d\x0a"
+          if defined $self->subprotocol;
+
+        $string .= 'Sec-WebSocket-Key: ' . $key . "\x0d\x0a";
+        $string .= 'Sec-WebSocket-Version: ' . 8 . "\x0d\x0a";
+    }
+    elsif ($version eq 'draft-ietf-hybi-00') {
         $self->_generate_keys;
 
         $string
@@ -98,7 +141,7 @@ sub to_string {
 
         $string .= 'Content-Length: ' . length($self->challenge) . "\x0d\x0a";
     }
-    elsif ($self->version eq 'draft-hixie-75') {
+    elsif ($version eq 'draft-hixie-75') {
         $string .= 'WebSocket-Protocol: ' . $self->subprotocol . "\x0d\x0a"
           if defined $self->subprotocol;
     }
@@ -110,7 +153,7 @@ sub to_string {
 
     $string .= "\x0d\x0a";
 
-    $string .= $self->challenge if $self->version eq 'draft-ietf-hybi-00';
+    $string .= $self->challenge if $version eq 'draft-ietf-hybi-00';
 
     return $string;
 }
@@ -145,6 +188,9 @@ sub _parse_body {
         $self->challenge($challenge);
 
         $self->version('draft-ietf-hybi-00');
+    }
+    elsif ($self->key) {
+        $self->version('draft-ietf-hybi-10');
     }
     else {
         $self->version('draft-hixie-75');
@@ -280,10 +326,13 @@ sub _generate_challenge {
 sub _finalize {
     my $self = shift;
 
-    return unless $self->upgrade    && $self->upgrade    eq 'WebSocket';
+    return unless $self->upgrade && lc $self->upgrade eq 'websocket';
     return unless $self->connection && $self->connection eq 'Upgrade';
 
-    my $origin = $self->field('Origin');
+    my $origin =
+        $self->version eq 'draft-ietf-hybi-10'
+      ? $self->field('Sec-WebSocket-Origin')
+      : $self->field('Origin');
     return unless $origin;
     $self->origin($origin);
 

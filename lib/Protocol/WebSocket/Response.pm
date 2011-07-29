@@ -6,6 +6,8 @@ use warnings;
 use base 'Protocol::WebSocket::Message';
 
 require Carp;
+use MIME::Base64 ();
+use Digest::SHA1 ();
 
 use Protocol::WebSocket::URL;
 use Protocol::WebSocket::Cookie::Response;
@@ -23,6 +25,8 @@ sub cookie {
 
     push @{$self->{cookies}}, $self->_build_cookie(@_);
 }
+
+sub key { @_ > 1 ? $_[0]->{key} = $_[1] : $_[0]->{key} }
 
 sub number1 { shift->_number('number1', 'key1', @_) }
 sub number2 { shift->_number('number2', 'key2', @_) }
@@ -50,35 +54,54 @@ sub status {
 sub headers {
     my $self = shift;
 
+    my $version = $self->version || 'draft-ietf-hybi-10';
+
     my $headers = [];
 
     push @$headers, Upgrade => 'WebSocket';
     push @$headers, Connection => 'Upgrade';
 
-    Carp::croak(qq/host is required/) unless defined $self->host;
+    if ($version eq 'draft-hixie-75' || $version eq 'draft-ietf-hybi-00') {
+        Carp::croak(qq/host is required/) unless defined $self->host;
 
-    my $location = $self->_build_url(
-        host          => $self->host,
-        secure        => $self->secure,
-        resource_name => $self->resource_name,
-    );
-    my $origin = $self->origin ? $self->origin : 'http://' . $location->host;
-    $origin =~ s{^http:}{https:} if !$self->origin && $self->secure;
+        my $location = $self->_build_url(
+            host          => $self->host,
+            secure        => $self->secure,
+            resource_name => $self->resource_name,
+        );
+        my $origin =
+          $self->origin ? $self->origin : 'http://' . $location->host;
+        $origin =~ s{^http:}{https:} if !$self->origin && $self->secure;
 
-    if ($self->version eq 'draft-hixie-75') {
-        push @$headers, 'WebSocket-Protocol' => $self->subprotocol
-          if defined $self->subprotocol;
-        push @$headers, 'WebSocket-Origin'   => $origin;
-        push @$headers, 'WebSocket-Location' => $location->to_string;
+        if ($version eq 'draft-hixie-75') {
+            push @$headers, 'WebSocket-Protocol' => $self->subprotocol
+              if defined $self->subprotocol;
+            push @$headers, 'WebSocket-Origin'   => $origin;
+            push @$headers, 'WebSocket-Location' => $location->to_string;
+        }
+        elsif ($version eq 'draft-ietf-hybi-00') {
+            push @$headers, 'Sec-WebSocket-Protocol' => $self->subprotocol
+              if defined $self->subprotocol;
+            push @$headers, 'Sec-WebSocket-Origin'   => $origin;
+            push @$headers, 'Sec-WebSocket-Location' => $location->to_string;
+        }
     }
-    elsif ($self->version eq 'draft-ietf-hybi-00') {
+    elsif ($version eq 'draft-ietf-hybi-10') {
+        Carp::croak(qq/key is required/) unless defined $self->key;
+
+        my $key = $self->key;
+        $key .= '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'; # WTF
+        $key = Digest::SHA1::sha1($key);
+        $key = MIME::Base64::encode_base64($key);
+        $key =~ s{\s+}{}g;
+
+        push @$headers, 'Sec-WebSocket-Accept' => $key;
+
         push @$headers, 'Sec-WebSocket-Protocol' => $self->subprotocol
           if defined $self->subprotocol;
-        push @$headers, 'Sec-WebSocket-Origin' => $origin;
-        push @$headers, 'Sec-WebSocket-Location' => $location->to_string;
     }
     else {
-        Carp::croak('Version ' . $self->version . ' is not supported');
+        Carp::croak('Version ' . $version . ' is not supported');
     }
 
     if (@{$self->cookies}) {
@@ -134,10 +157,13 @@ sub _parse_first_line {
 sub _parse_body {
     my $self = shift;
 
-    if ($self->field('Sec-WebSocket-Origin')) {
-        return 1 if length $self->{buffer} < 16;
+    if ($self->field('Sec-WebSocket-Accept')) {
+        $self->version('draft-ietf-hybi-10');
+    }
+    elsif ($self->field('Sec-WebSocket-Origin')) {
+        $self->version('draft-ietf-hybi-00');
 
-        $self->version(76);
+        return 1 if length $self->{buffer} < 16;
 
         my $checksum = substr $self->{buffer}, 0, 16, '';
         $self->checksum($checksum);
@@ -155,23 +181,40 @@ sub _parse_body {
 sub _finalize {
     my $self = shift;
 
-    my $location = $self->field('Sec-WebSocket-Location')
-      || $self->field('WebSocket-Location');
-    return unless defined $location;
-    $self->location($location);
+    if ($self->version eq 'draft-hixie-75') {
+        my $location = $self->field('WebSocket-Location');
+        return unless defined $location;
+        $self->location($location);
 
-    my $url = $self->_build_url;
-    return unless $url->parse($self->location);
+        my $url = $self->_build_url;
+        return unless $url->parse($self->location);
 
-    $self->secure($url->secure);
-    $self->host($url->host);
-    $self->resource_name($url->resource_name);
+        $self->secure($url->secure);
+        $self->host($url->host);
+        $self->resource_name($url->resource_name);
 
-    $self->origin($self->field('Sec-WebSocket-Origin')
-          || $self->field('WebSocket-Origin'));
+        $self->origin($self->field('WebSocket-Origin'));
 
-    $self->subprotocol($self->field('Sec-WebSocket-Protocol')
-          || $self->field('WebSocket-Protocol'));
+        $self->subprotocol($self->field('WebSocket-Protocol'));
+    }
+    elsif ($self->version eq 'draft-ietf-hybi-00') {
+        my $location = $self->field('Sec-WebSocket-Location');
+        return unless defined $location;
+        $self->location($location);
+
+        my $url = $self->_build_url;
+        return unless $url->parse($self->location);
+
+        $self->secure($url->secure);
+        $self->host($url->host);
+        $self->resource_name($url->resource_name);
+
+        $self->origin($self->field('Sec-WebSocket-Origin'));
+        $self->subprotocol($self->field('Sec-WebSocket-Protocol'));
+    }
+    else {
+        $self->subprotocol($self->field('Sec-WebSocket-Protocol'));
+    }
 
     return 1;
 }

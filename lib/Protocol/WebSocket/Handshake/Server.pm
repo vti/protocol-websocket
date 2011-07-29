@@ -43,6 +43,9 @@ sub parse {
         $res->number2($req->number2);
         $res->challenge($req->challenge);
     }
+    elsif ($req->version eq 'draft-ietf-hybi-10') {
+        $res->key($req->key);
+    }
 
     return 1;
 }

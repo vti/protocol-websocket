@@ -39,7 +39,8 @@ WriteMakefile(
     PREREQ_PM => {
         'Carp'         => 0,
         'Digest::MD5'  => 0,
-        'Scalar::Util' => 0
+        'Digest::SHA1' => 0,
+        'Scalar::Util' => 0,
     },
     test => {TESTS => 't/*.t t/*/*.t'}
 );

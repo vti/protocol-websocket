@@ -15,6 +15,8 @@ sub new {
     my $self = {@_};
     bless $self, $class;
 
+    $self->{version} ||= '';
+
     $self->{buffer} = '';
 
     $self->{fields} ||= {};
