@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 64;
+use Test::More tests => 59;
 
 use IO::Handle;
 
@@ -37,11 +37,6 @@ is $req->number1   => '155712099';
 is $req->number2   => '173347027';
 is $req->challenge => 'Tm[K T2u';
 
-is $req->version       => 76;
-is $req->resource_name => '/demo';
-is $req->host          => 'example.com';
-is $req->origin        => 'http://example.com';
-is $req->checksum      => 'fQJ,fN/4F4!~K~MH';
 is $req->version       => 76;
 is $req->resource_name => '/demo';
 is $req->host          => 'example.com';
