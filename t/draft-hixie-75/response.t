@@ -11,7 +11,7 @@ my $res;
 my $message;
 
 $res = Protocol::WebSocket::Response->new;
-$res->version(75);
+$res->version('draft-hixie-75');
 $res->host('example.com');
 is $res->to_string => "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
   . "Upgrade: WebSocket\x0d\x0a"
@@ -21,7 +21,7 @@ is $res->to_string => "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
   . "\x0d\x0a";
 
 $res = Protocol::WebSocket::Response->new;
-$res->version(75);
+$res->version('draft-hixie-75');
 $res->host('example.com');
 $res->subprotocol('sample');
 is $res->to_string => "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
@@ -33,7 +33,7 @@ is $res->to_string => "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
   . "\x0d\x0a";
 
 $res = Protocol::WebSocket::Response->new;
-$res->version(75);
+$res->version('draft-hixie-75');
 $res->host('example.com');
 $res->secure(1);
 is $res->to_string => "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
@@ -44,7 +44,7 @@ is $res->to_string => "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
   . "\x0d\x0a";
 
 $res = Protocol::WebSocket::Response->new;
-$res->version(75);
+$res->version('draft-hixie-75');
 $res->host('example.com');
 $res->resource_name('/demo');
 $res->origin('file://');
@@ -68,7 +68,7 @@ $res->parse("WebSocket-Origin: file://\x0d\x0a");
 $res->parse("WebSocket-Location: ws://example.com/demo\x0d\x0a");
 $res->parse("\x0d\x0a\x00foo\xff");
 ok $res->is_done;
-is $res->version     => 75;
+is $res->version     => 'draft-hixie-75';
 is $res->subprotocol => 'sample';
 
 $message =
@@ -81,5 +81,5 @@ $message =
 $res = Protocol::WebSocket::Response->new;
 ok $res->parse($message);
 ok $res->is_done;
-is $res->version => 75;
+is $res->version => 'draft-hixie-75';
 is $message      => "\x00foo\xff";

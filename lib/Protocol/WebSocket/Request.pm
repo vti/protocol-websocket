@@ -86,7 +86,7 @@ sub to_string {
     $origin =~ s{^http:}{https:} if $self->secure;
     $string .= "Origin: " . $origin . "\x0d\x0a";
 
-    if ($self->version > 75) {
+    if ($self->version eq 'draft-ietf-hybi-00') {
         $self->_generate_keys;
 
         $string
@@ -98,16 +98,19 @@ sub to_string {
 
         $string .= 'Content-Length: ' . length($self->challenge) . "\x0d\x0a";
     }
-    else {
+    elsif ($self->version eq 'draft-hixie-75') {
         $string .= 'WebSocket-Protocol: ' . $self->subprotocol . "\x0d\x0a"
           if defined $self->subprotocol;
+    }
+    else {
+        Carp::croak('Version ' . $self->version . ' is not supported');
     }
 
     # TODO cookies
 
     $string .= "\x0d\x0a";
 
-    $string .= $self->challenge if $self->version > 75;
+    $string .= $self->challenge if $self->version eq 'draft-ietf-hybi-00';
 
     return $string;
 }
@@ -140,9 +143,11 @@ sub _parse_body {
 
         my $challenge = substr $self->{buffer}, 0, 8, '';
         $self->challenge($challenge);
+
+        $self->version('draft-ietf-hybi-00');
     }
     else {
-        $self->version(75);
+        $self->version('draft-hixie-75');
     }
 
     if (length $self->{buffer}) {

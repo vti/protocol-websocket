@@ -37,7 +37,7 @@ is $req->number1   => '155712099';
 is $req->number2   => '173347027';
 is $req->challenge => 'Tm[K T2u';
 
-is $req->version       => 76;
+is $req->version       => 'draft-ietf-hybi-00';
 is $req->resource_name => '/demo';
 is $req->host          => 'example.com';
 is $req->origin        => 'http://example.com';
@@ -59,6 +59,7 @@ ok $req->is_done;
 is $req->subprotocol => 'sample';
 
 $req = Protocol::WebSocket::Request->new(
+    version       => 'draft-ietf-hybi-00',
     host          => 'example.com',
     resource_name => '/demo',
     key1          => '18x 6]8vM;54 *(5:  {   U1]8  z [  8',
@@ -78,6 +79,7 @@ is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
 is $req->checksum => "fQJ,fN/4F4!~K~MH";
 
 $req = Protocol::WebSocket::Request->new(
+    version       => 'draft-ietf-hybi-00',
     host          => 'example.com',
     resource_name => '/demo',
     subprotocol   => 'sample',
@@ -99,6 +101,7 @@ is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
 is $req->checksum => "fQJ,fN/4F4!~K~MH";
 
 $req = Protocol::WebSocket::Request->new(
+    version       => 'draft-ietf-hybi-00',
     host          => 'example.com',
     resource_name => '/demo',
     key1          => '55 997',
@@ -109,6 +112,7 @@ is $req->checksum =>
   "\xc4\x15\xc2\xc8\x29\x5c\x94\x8a\x95\xb9\x4d\xec\x5b\x1d\x33\xce";
 
 $req = Protocol::WebSocket::Request->new(
+    version       => 'draft-ietf-hybi-00',
     host          => 'example.com',
     resource_name => '/demo'
 );
@@ -147,4 +151,4 @@ is $req->origin        => 'http://example.com';
 is $req->key1          => '18x 6]8vM;54 *(5:  {   U1]8  z [  8';
 is $req->key2          => '1_ tx7X d  <  nw  334J702) 7]o}` 0';
 ok $req->is_done;
-is $req->version => 76;
+is $req->version => 'draft-ietf-hybi-00';

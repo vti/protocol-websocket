@@ -15,8 +15,6 @@ sub new {
     my $self = {@_};
     bless $self, $class;
 
-    $self->version(76) unless $self->version;
-
     $self->{buffer} = '';
 
     $self->{fields} ||= {};

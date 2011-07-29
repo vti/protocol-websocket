@@ -53,6 +53,7 @@ ok $res->is_done;
 is $message => "\x00foo\xff";
 
 $res = Protocol::WebSocket::Response->new(
+    version       => 'draft-ietf-hybi-00',
     host          => 'example.com',
     resource_name => '/demo',
     origin        => 'file://',
@@ -69,6 +70,7 @@ is $res->to_string => "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
   . "0st3Rl&q-2ZU^weu";
 
 $res = Protocol::WebSocket::Response->new(
+    version       => 'draft-ietf-hybi-00',
     host          => 'example.com',
     resource_name => '/demo',
     origin        => 'file://',
@@ -87,6 +89,7 @@ is $res->to_string => "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
   . "0st3Rl&q-2ZU^weu";
 
 $res = Protocol::WebSocket::Response->new(
+    version       => 'draft-ietf-hybi-00',
     secure        => 1,
     host          => 'example.com',
     resource_name => '/demo',
@@ -104,6 +107,7 @@ is $res->to_string => "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
   . "0st3Rl&q-2ZU^weu";
 
 $res = Protocol::WebSocket::Response->new(
+    version       => 'draft-ietf-hybi-00',
     secure        => 1,
     host          => 'example.com',
     resource_name => '/demo',
@@ -121,6 +125,7 @@ is $res->to_string => "HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
   . "0st3Rl&q-2ZU^weu";
 
 $res = Protocol::WebSocket::Response->new(
+    version       => 'draft-ietf-hybi-00',
     host          => 'example.com',
     resource_name => '/demo',
     origin        => 'file://',

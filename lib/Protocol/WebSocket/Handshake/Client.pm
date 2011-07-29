@@ -5,12 +5,19 @@ use warnings;
 
 use base 'Protocol::WebSocket::Handshake';
 
+require Carp;
+
 use Protocol::WebSocket::URL;
 
 sub new {
     my $self = shift->SUPER::new(@_);
 
     $self->_set_url($self->{url}) if defined $self->{url};
+
+    if (my $version = $self->{version}) {
+        $self->req->version($version);
+        $self->res->version($version);
+    }
 
     return $self;
 }
@@ -39,7 +46,9 @@ sub parse {
         }
 
         if ($res->is_done) {
-            if ($req->version > 75 && $req->checksum ne $res->checksum) {
+            if (   $req->version eq 'draft-ietf-hybi-00'
+                && $req->checksum ne $res->checksum)
+            {
                 $self->error('Checksum is wrong.');
                 return;
             }

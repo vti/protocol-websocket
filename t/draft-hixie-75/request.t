@@ -30,7 +30,7 @@ is $req->state => 'fields';
 ok $req->parse("\x0d\x0a");
 is $req->state => 'done';
 
-is $req->version       => 75;
+is $req->version       => 'draft-hixie-75';
 is $req->resource_name => '/demo';
 is $req->host          => 'example.com';
 is $req->origin        => 'http://example.com';
@@ -42,7 +42,7 @@ ok $req->parse("Connection: Upgrade\x0d\x0a");
 ok $req->parse("Host: example.com:3000\x0d\x0a");
 ok $req->parse("Origin: null\x0d\x0a");
 ok $req->parse("\x0d\x0a");
-is $req->version => 75;
+is $req->version => 'draft-hixie-75';
 is $req->state   => 'done';
 
 $req = Protocol::WebSocket::Request->new;
@@ -52,7 +52,7 @@ ok $req->parse("CONNECTION: Upgrade\x0d\x0a");
 ok $req->parse("HOST: example.com:3000\x0d\x0a");
 ok $req->parse("ORIGIN: null\x0d\x0a");
 ok $req->parse("\x0d\x0a");
-is $req->version => 75;
+is $req->version => 'draft-hixie-75';
 is $req->state   => 'done';
 
 $req = Protocol::WebSocket::Request->new;
@@ -63,7 +63,7 @@ ok $req->parse("Host: example.com:3000\x0d\x0a");
 ok $req->parse("Origin: null\x0d\x0a");
 ok $req->parse("WebSocket-Protocol: sample\x0d\x0a");
 ok $req->parse("\x0d\x0a");
-is $req->version     => 75;
+is $req->version     => 'draft-hixie-75';
 is $req->state       => 'done';
 is $req->subprotocol => 'sample';
 
@@ -78,7 +78,7 @@ $message =
   "Host: example.com:3000\x0d\x0a" . "Origin: null\x0d\x0a" . "\x0d\x0a";
 ok $req->parse($message);
 is $message      => '';
-is $req->version => 75;
+is $req->version => 'draft-hixie-75';
 ok $req->is_done;
 
 $req = Protocol::WebSocket::Request->new;
@@ -117,7 +117,7 @@ ok $req->is_done;
 ok $req->secure;
 
 $req = Protocol::WebSocket::Request->new(
-    version       => 75,
+    version       => 'draft-hixie-75',
     host          => 'example.com',
     resource_name => '/demo'
 );
@@ -129,7 +129,7 @@ is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
   . "\x0d\x0a";
 
 $req = Protocol::WebSocket::Request->new(
-    version       => 75,
+    version       => 'draft-hixie-75',
     host          => 'example.com',
     subprotocol   => 'sample',
     resource_name => '/demo'
@@ -143,7 +143,7 @@ is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
   . "\x0d\x0a";
 
 $req = Protocol::WebSocket::Request->new(
-    version       => 75,
+    version       => 'draft-hixie-75',
     host          => 'example.com',
     resource_name => '/demo'
 );
@@ -156,7 +156,7 @@ is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
 
 $req = Protocol::WebSocket::Request->new(
     secure        => 1,
-    version       => 75,
+    version       => 'draft-hixie-75',
     host          => 'example.com',
     resource_name => '/demo'
 );
@@ -214,7 +214,7 @@ is $req->connection    => 'Upgrade';
 is $req->host          => 'example.com:3000';
 is $req->origin        => 'null';
 ok $req->is_done;
-is $req->version => 75;
+is $req->version => 'draft-hixie-75';
 
 $req = Protocol::WebSocket::Request->new_from_psgi(
     {   SCRIPT_NAME             => '',

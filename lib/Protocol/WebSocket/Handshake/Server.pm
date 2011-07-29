@@ -38,7 +38,7 @@ sub parse {
     $res->resource_name($req->resource_name);
     $res->origin($req->origin);
 
-    if ($req->version > 75) {
+    if ($req->version eq 'draft-ietf-hybi-00') {
         $res->number1($req->number1);
         $res->number2($req->number2);
         $res->challenge($req->challenge);

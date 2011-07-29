@@ -7,7 +7,9 @@ use Test::More tests => 14;
 
 use_ok 'Protocol::WebSocket::Handshake::Client';
 
-my $h = Protocol::WebSocket::Handshake::Client->new;
+my $h =
+  Protocol::WebSocket::Handshake::Client->new(
+    version => 'draft-ietf-hybi-00');
 $h->url('ws://example.com/demo');
 
 # Mocking
@@ -25,7 +27,10 @@ is $h->to_string => "GET /demo HTTP/1.1\x0d\x0a"
   . "Content-Length: 8\x0d\x0a"
   . "\x0d\x0aTm[K T2u";
 
-$h = Protocol::WebSocket::Handshake::Client->new(url => 'ws://example.com');
+$h = Protocol::WebSocket::Handshake::Client->new(
+    url     => 'ws://example.com',
+    version => 'draft-ietf-hybi-00'
+);
 
 # Mocking
 $h->req->key1("18x 6]8vM;54 *(5:  {   U1]8  z [  8");

@@ -5,10 +5,10 @@ use warnings;
 
 use base 'Protocol::WebSocket::Message';
 
+require Carp;
+
 use Protocol::WebSocket::URL;
 use Protocol::WebSocket::Cookie::Response;
-
-require Carp;
 
 sub location { @_ > 1 ? $_[0]->{location} = $_[1] : $_[0]->{location} }
 
@@ -65,17 +65,20 @@ sub headers {
     my $origin = $self->origin ? $self->origin : 'http://' . $location->host;
     $origin =~ s{^http:}{https:} if !$self->origin && $self->secure;
 
-    if ($self->version <= 75) {
+    if ($self->version eq 'draft-hixie-75') {
         push @$headers, 'WebSocket-Protocol' => $self->subprotocol
           if defined $self->subprotocol;
         push @$headers, 'WebSocket-Origin'   => $origin;
         push @$headers, 'WebSocket-Location' => $location->to_string;
     }
-    else {
+    elsif ($self->version eq 'draft-ietf-hybi-00') {
         push @$headers, 'Sec-WebSocket-Protocol' => $self->subprotocol
           if defined $self->subprotocol;
         push @$headers, 'Sec-WebSocket-Origin' => $origin;
         push @$headers, 'Sec-WebSocket-Location' => $location->to_string;
+    }
+    else {
+        Carp::croak('Version ' . $self->version . ' is not supported');
     }
 
     if (@{$self->cookies}) {
@@ -89,7 +92,7 @@ sub headers {
 sub body {
     my $self = shift;
 
-    return $self->checksum if $self->version > 75;
+    return $self->checksum if $self->version eq 'draft-ietf-hybi-00';
 
     return '';
 }
@@ -140,7 +143,7 @@ sub _parse_body {
         $self->checksum($checksum);
     }
     else {
-        $self->version(75);
+        $self->version('draft-hixie-75');
     }
 
     return $self if $self->_finalize;
