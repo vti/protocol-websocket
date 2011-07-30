@@ -43,12 +43,11 @@ L<Protocol::WebSocket::Handshake::Server>.
 
 Set or get handshake error.
 
-=head2 C<secure>
+=head2 C<version>
 
-    $handshake->secure;
-    $handshake->secure(1);
+    $handshake->version;
 
-Check or set whether a handshake is secured with SSL/TLS.
+Set or get handshake version.
 
 =head1 METHODS
 

@@ -316,48 +316,79 @@ Protocol::WebSocket::Frame - WebSocket Frame
 
     # Create frame
     my $frame = Protocol::WebSocket::Frame->new('123');
-    $frame->to_bytes; # \x00123\xff
+    $frame->to_bytes;
 
     # Parse frames
     my $frame = Protocol::WebSocket::Frame->new;
-    $frame->append("123\x00foo\xff56\x00bar\xff789");
-    $f->next; # foo
-    $f->next; # bar
+    $frame->append(...);
+    $f->next; # get next message
+    $f->next; # get another next message
 
 =head1 DESCRIPTION
 
 Construct or parse a WebSocket frame.
 
+=head1 ATTRIBUTES
+
+=head2 C<type>
+
+Frame's type. C<text> by default. Other accepted values:
+
+    binary
+    ping
+    pong
+    close
+
 =head1 METHODS
 
 =head2 C<new>
 
+    Protocol::WebSocket::Frame->new('data');
+    Protocol::WebSocket::Frame->new(buffer => 'data', type => 'close');
+
 Create a new L<Protocol::WebSocket::Frame> instance. Automatically detect if the
 passed data is a Perl string or bytes.
 
+=head2 C<is_text>
+
+Check if frame is of text type.
+
+=head2 C<is_binary>
+
+Check if frame is of binary type.
+
+=head2 C<is_ping>
+
+Check if frame is a ping request.
+
+=head2 C<is_pong>
+
+Check if frame is a pong response.
+
+=head2 C<is_close>
+
+Check if frame is of close type.
+
 =head2 C<append>
 
-    $frame->append("\x00foo");
-    $frame->append("bar\xff");
+    $frame->append(...);
 
 Append a frame chunk.
 
 =head2 C<next>
 
-    $frame->append("\x00foo");
-    $frame->append("\xff\x00bar\xff");
+    $frame->append(...);
 
-    $frame->next; # foo
-    $frame->next; # bar
+    $frame->next; # next message
 
-Return the next frame as a Perl string.
+Return the next message as a Perl string.
 
 =head2 C<next_bytes>
 
-Return the next frame as a UTF-8 encoded string.
+Return the next message as a UTF-8 encoded string.
 
 =head2 C<to_bytes>
 
-Construct a WebSocket frame as a UTF-8 encoded string.
+Construct a WebSocket message as a UTF-8 encoded string.
 
 =cut

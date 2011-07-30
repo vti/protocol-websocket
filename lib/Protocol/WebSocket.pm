@@ -12,11 +12,52 @@ __END__
 
 Protocol::WebSocket - WebSocket protocol
 
+=head1 SYNOPSIS
+
+    # Server side
+    my $hs = Protocol::WebSocket::Handshake::Server->new;
+
+    $hs->parse('some data from the client');
+
+    $hs->is_done; # tells us when handshake is done
+
+    # Passing version is important for backwards compatibility
+    my $frame = Protocol::WebSocket::Frame->new(version => $hs->version);
+
+    $frame->append('some data from the client');
+
+    while (defined(my $message = $frame->next)) {
+        if ($frame->is_close) {
+
+            # Send close frame back
+            send(
+                Protocol::WebSocket::Frame->new(
+                    type    => 'close',
+                    version => $version
+                )
+            );
+
+            return;
+        }
+
+        # We got a message!
+    }
+
 =head1 DESCRIPTION
 
 Client/server WebSocket message and frame parser/constructor. This module does
 not provide a WebSocket server or client, but is made for using in http servers
 or clients to provide WebSocket support.
+
+L<Protocol::WebSocket> supports the following WebSocket protocol versions:
+
+    draft-hixie-75
+    draft-ietf-hybi-00
+    draft-ietf-hybi-10
+
+By default the latest (C<draft-ietf-hybi-10>) version is used. The WebSocket
+version is detected automatically on the server side. On the client side you
+have set a C<version> attribute to an appropriate value.
 
 L<Protocol::WebSocket> itself does not contain any code and cannot be used
 directly. Instead the following modules should be used:
@@ -66,7 +107,7 @@ Viacheslav Tykhanovskyi, C<vti@cpan.org>.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2010, Viacheslav Tykhanovskyi.
+Copyright (C) 2010-2011, Viacheslav Tykhanovskyi.
 
 This program is free software, you can redistribute it and/or modify it under
 the same terms as Perl 5.10.
