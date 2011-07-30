@@ -7,6 +7,14 @@ use Config;
 use Encode ();
 use Scalar::Util 'readonly';
 
+our %TYPES = (
+    text   => 0x01,
+    binary => 0x02,
+    ping   => 0x09,
+    pong   => 0x0a,
+    close  => 0x08
+);
+
 sub new {
     my $class = shift;
     $class = ref $class if ref $class;
@@ -70,8 +78,14 @@ sub next {
 
 sub fin    { @_ > 1 ? $_[0]->{fin}    = $_[1] : $_[0]->{fin} }
 sub rsv    { @_ > 1 ? $_[0]->{rsv}    = $_[1] : $_[0]->{rsv} }
-sub opcode { @_ > 1 ? $_[0]->{opcode} = $_[1] : $_[0]->{opcode} }
+sub opcode { @_ > 1 ? $_[0]->{opcode} = $_[1] : $_[0]->{opcode} || 1 }
 sub masked { @_ > 1 ? $_[0]->{masked} = $_[1] : $_[0]->{masked} }
+
+sub is_ping   { $_[0]->opcode == 9 }
+sub is_pong   { $_[0]->opcode == 10 }
+sub is_close  { $_[0]->opcode == 8 }
+sub is_text   { $_[0]->opcode == 1 }
+sub is_binary { $_[0]->opcode == 2 }
 
 sub next_bytes {
     my $self = shift;
@@ -79,6 +93,11 @@ sub next_bytes {
     if (   $self->version eq 'draft-hixie-75'
         || $self->version eq 'draft-ietf-hybi-00')
     {
+        if ($self->{buffer} =~ s/^\xff\x00//) {
+            $self->opcode(8);
+            return '';
+        }
+
         return unless $self->{buffer} =~ s/^[^\x00]*\x00(.*?)\xff//s;
 
         return $1;
@@ -201,6 +220,10 @@ sub to_bytes {
     if (   $self->version eq 'draft-hixie-75'
         || $self->version eq 'draft-ietf-hybi-00')
     {
+        if ($self->{type} && $self->{type} eq 'close') {
+            return "\xff\x00";
+        }
+
         return "\x00" . $self->{buffer} . "\xff";
     }
 
@@ -211,7 +234,14 @@ sub to_bytes {
 
     my $string = '';
 
-    my $opcode = $self->opcode || 1;
+    my $opcode;
+    if (my $type = $self->{type}) {
+        $opcode = $TYPES{$type};
+    }
+    else {
+        $opcode = $self->opcode || 1;
+    }
+
     $string .= pack 'C', ($opcode + 128);
 
     my $payload_len = length($self->{buffer});

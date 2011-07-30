@@ -5,7 +5,7 @@ use warnings;
 
 use utf8;
 
-use Test::More tests => 23;
+use Test::More tests => 27;
 
 use Encode;
 
@@ -28,6 +28,11 @@ $f->append("\x00");
 ok not defined $f->next;
 $f->append("\xff");
 is $f->next => '';
+
+$f->append("\xff");
+$f->append("\x00");
+is $f->next => '';
+ok $f->is_close;
 
 $f->append("\x00");
 ok not defined $f->next;
@@ -83,3 +88,15 @@ $f = Protocol::WebSocket::Frame->new(
     version => 'draft-ietf-hybi-00'
 );
 is $f->to_bytes => "\x00" . Encode::encode_utf8("☺") . "\xff";
+
+$f = Protocol::WebSocket::Frame->new(
+    version => 'draft-ietf-hybi-00',
+    type    => 'ping'
+);
+is $f->to_bytes => "\x00\xff";
+
+$f = Protocol::WebSocket::Frame->new(
+    version => 'draft-ietf-hybi-00',
+    type    => 'close'
+);
+is $f->to_bytes => "\xff\x00";
