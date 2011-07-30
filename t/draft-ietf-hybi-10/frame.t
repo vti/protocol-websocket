@@ -5,7 +5,7 @@ use warnings;
 
 use utf8;
 
-use Test::More tests => 30;
+use Test::More tests => 34;
 
 use Encode;
 
@@ -42,6 +42,15 @@ is $f->opcode => 1;
 
 # Multi fragments
 $f->append(pack('H*', "010348656c") . pack('H*', "80026c6f"));
+is $f->next_bytes, 'Hello';
+is $f->opcode => 1;
+
+# Injected control frame (1 fragment, ping, 2 fragment)
+$f->append(pack('H*', "010348656c"));
+$f->append(pack('H*', "890548656c6c6f"));
+$f->append(pack('H*', "80026c6f"));
+is $f->next_bytes, 'Hello';
+is $f->opcode => 9;
 is $f->next_bytes, 'Hello';
 is $f->opcode => 1;
 

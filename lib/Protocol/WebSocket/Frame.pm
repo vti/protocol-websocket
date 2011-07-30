@@ -92,37 +92,35 @@ sub next_bytes {
         my @bits = split //, unpack("B*", $hdr);
 
         $self->fin($bits[0]);
-        $self->rsv([@bits[1..3]]);
+        $self->rsv([@bits[1 .. 3]]);
 
-        if (!@{$self->{fragments}}) {
-            my $opcode = unpack('C', $hdr) & 0b00001111;
-            $self->opcode($opcode);
-        }
+        my $opcode = unpack('C', $hdr) & 0b00001111;
 
-        my $offset = 1; # FIN,RSV[1-3],OPCODE
+        my $offset = 1;    # FIN,RSV[1-3],OPCODE
 
         my $payload_len = unpack 'C', substr($self->{buffer}, 1, 1);
 
         my $masked = ($payload_len & 0b10000000) >> 7;
         $self->masked($masked);
 
-        $offset += 1; # + MASKED,PAYLOAD_LEN
+        $offset += 1;      # + MASKED,PAYLOAD_LEN
 
         $payload_len = $payload_len & 0b01111111;
         if ($payload_len == 126) {
-            return unless length ($self->{buffer}) >= $offset + 2;
+            return unless length($self->{buffer}) >= $offset + 2;
 
             $payload_len = unpack 'n', substr($self->{buffer}, $offset, 2);
 
             $offset += 2;
         }
         elsif ($payload_len > 126) {
-            return unless length ($self->{buffer}) >= $offset + 4;
+            return unless length($self->{buffer}) >= $offset + 4;
 
             my $bits = join '', map { unpack 'B*' } split //,
               substr($self->{buffer}, $offset, 8);
 
-            # Most significant bit must be 0. And here is a crazy way of doing it %)
+            # Most significant bit must be 0.
+            # And here is a crazy way of doing it %)
             $bits =~ s{^.}{0};
 
             # Can we handle 64bit numbers?
@@ -141,12 +139,13 @@ sub next_bytes {
 
         if ($payload_len > $self->{max_payload_size}) {
             $self->{buffer} = '';
-            die "Payload is too big. Deny big message or increase max_payload_size";
+            die
+              "Payload is too big. Deny big message or increase max_payload_size";
         }
 
         my $mask;
         if ($self->masked) {
-            return unless length ($self->{buffer}) >= $offset + 4;
+            return unless length($self->{buffer}) >= $offset + 4;
 
             $mask = substr($self->{buffer}, $offset, 4);
             $offset += 4;
@@ -162,12 +161,30 @@ sub next_bytes {
 
         substr($self->{buffer}, 0, $offset + $payload_len, '');
 
+        # Injected control frame
+        if (@{$self->{fragments}} && $opcode & 0b1000) {
+            $self->opcode($opcode);
+            return $payload;
+        }
+
         if ($self->fin) {
+            if (@{$self->{fragments}}) {
+                $self->opcode(shift @{$self->{fragments}});
+            }
+            else {
+                $self->opcode($opcode);
+            }
             $payload = join '', @{$self->{fragments}}, $payload;
             $self->{fragments} = [];
             return $payload;
         }
         else {
+
+            # Remember first fragment opcode
+            if (!@{$self->{fragments}}) {
+                push @{$self->{fragments}}, $opcode;
+            }
+
             push @{$self->{fragments}}, $payload;
 
             die "Too many fragments"
@@ -188,7 +205,8 @@ sub to_bytes {
     }
 
     if (length $self->{buffer} > $self->{max_payload_size}) {
-        die "Payload is too big. Send shorter messages or increase max_payload_size";
+        die
+          "Payload is too big. Send shorter messages or increase max_payload_size";
     }
 
     my $string = '';
@@ -214,8 +232,10 @@ sub to_bytes {
     }
 
     if ($self->masked) {
-        my $mask = $self->{mask} || rand(2 ** 32); # Not sure if perl provides
-                                                   # good randomness
+
+        # Not sure if perl provides good randomness
+        my $mask = $self->{mask} || rand(2**32);
+
         $mask = pack 'N', $mask;
 
         $string .= $mask;
