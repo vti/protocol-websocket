@@ -3,6 +3,7 @@ package Protocol::WebSocket::Frame;
 use strict;
 use warnings;
 
+use Config;
 use Encode ();
 use Scalar::Util 'readonly';
 
@@ -34,6 +35,9 @@ sub new {
     $self->{version} ||= 'draft-ietf-hidy-10';
 
     $self->{fragments} = [];
+
+    $self->{max_fragments_amount} ||= 128;
+    $self->{max_payload_size}     ||= 65536;
 
     return $self;
 }
@@ -82,72 +86,93 @@ sub next_bytes {
 
     return unless length $self->{buffer} >= 2;
 
-    my $hdr = substr($self->{buffer}, 0, 1);
+    while (length $self->{buffer}) {
+        my $hdr = substr($self->{buffer}, 0, 1);
 
-    my @bits = split //, unpack("B*", $hdr);
+        my @bits = split //, unpack("B*", $hdr);
 
-    $self->fin($bits[0]);
-    $self->rsv([@bits[1..3]]);
+        $self->fin($bits[0]);
+        $self->rsv([@bits[1..3]]);
 
-    if (!@{$self->{fragments}}) {
-        my $opcode = unpack 'C', pack 'B*', '0000' . join '', @bits[4 .. 7];
-        $self->opcode($opcode);
-    }
+        if (!@{$self->{fragments}}) {
+            my $opcode = unpack('C', $hdr) & 0b00001111;
+            $self->opcode($opcode);
+        }
 
-    my $offset = 1; # FIN,RSV[1-3],OPCODE
+        my $offset = 1; # FIN,RSV[1-3],OPCODE
 
-    my $payload_len = unpack 'C', substr($self->{buffer}, 1, 1);
+        my $payload_len = unpack 'C', substr($self->{buffer}, 1, 1);
 
-    my $masked = ($payload_len & 2 ** 7) >> 7;
-    $self->masked($masked);
+        my $masked = ($payload_len & 0b10000000) >> 7;
+        $self->masked($masked);
 
-    $offset += 1; # + MASKED,PAYLOAD_LEN
+        $offset += 1; # + MASKED,PAYLOAD_LEN
 
-    $payload_len = $payload_len & 2 ** 7 - 1;
-    if ($payload_len == 126) {
-        return unless length ($self->{buffer}) >= $offset + 2;
+        $payload_len = $payload_len & 0b01111111;
+        if ($payload_len == 126) {
+            return unless length ($self->{buffer}) >= $offset + 2;
 
-        $payload_len = unpack 'S', substr($self->{buffer}, $offset, 2);
+            $payload_len = unpack 'n', substr($self->{buffer}, $offset, 2);
 
-        $offset += 2;
-    }
-    elsif ($payload_len > 126) {
-        return unless length ($self->{buffer}) >= $offset + 4;
+            $offset += 2;
+        }
+        elsif ($payload_len > 126) {
+            return unless length ($self->{buffer}) >= $offset + 4;
 
-        my $bits = join '', map { unpack 'B*' } split //,
-          substr($self->{buffer}, $offset, 8);
-        $bits =~ s{^.}{0};            # Most significant bit must be 0
-        $bits = substr($bits, 32);    # TODO how to handle bigger numbers?
-        $payload_len = unpack 'N', pack 'B*', $bits;
+            my $bits = join '', map { unpack 'B*' } split //,
+              substr($self->{buffer}, $offset, 8);
 
-        $offset += 8;
-    }
+            # Most significant bit must be 0. And here is a crazy way of doing it %)
+            $bits =~ s{^.}{0};
 
-    my $mask;
-    if ($self->masked) {
-        return unless length ($self->{buffer}) >= $offset + 4;
+            # Can we handle 64bit numbers?
+            if ($Config{ivsize} <= 4) {
+                $bits = substr($bits, 32);
+                $payload_len = unpack 'N', pack 'B*', $bits;
+            }
 
-        $mask = substr($self->{buffer}, $offset, 4);
-        $offset += 4;
-    }
+            # This is not tested :(
+            else {
+                $payload_len = unpack 'Q', pack 'B*', $bits;
+            }
 
-    return if length($self->{buffer}) < $offset + $payload_len;
+            $offset += 8;
+        }
 
-    my $payload = substr($self->{buffer}, $offset);
+        if ($payload_len > $self->{max_payload_size}) {
+            $self->{buffer} = '';
+            die "Payload is too big. Deny big message or increase max_payload_size";
+        }
 
-    if ($self->masked) {
-        $payload = $self->_mask($payload, $mask);
-    }
+        my $mask;
+        if ($self->masked) {
+            return unless length ($self->{buffer}) >= $offset + 4;
 
-    $self->{buffer} = '';
+            $mask = substr($self->{buffer}, $offset, 4);
+            $offset += 4;
+        }
 
-    if ($self->fin) {
-        $payload = join '', @{$self->{fragments}}, $payload;
-        $self->{fragments} = [];
-        return $payload;
-    }
-    else {
-        push @{$self->{fragments}}, $payload;
+        return if length($self->{buffer}) < $offset + $payload_len;
+
+        my $payload = substr($self->{buffer}, $offset, $payload_len);
+
+        if ($self->masked) {
+            $payload = $self->_mask($payload, $mask);
+        }
+
+        substr($self->{buffer}, 0, $offset + $payload_len, '');
+
+        if ($self->fin) {
+            $payload = join '', @{$self->{fragments}}, $payload;
+            $self->{fragments} = [];
+            return $payload;
+        }
+        else {
+            push @{$self->{fragments}}, $payload;
+
+            die "Too many fragments"
+              if @{$self->{fragments}} > $self->{max_fragments_amount};
+        }
     }
 
     return;
@@ -162,6 +187,10 @@ sub to_bytes {
         return "\x00" . $self->{buffer} . "\xff";
     }
 
+    if (length $self->{buffer} > $self->{max_payload_size}) {
+        die "Payload is too big. Send shorter messages or increase max_payload_size";
+    }
+
     my $string = '';
 
     my $opcode = $self->opcode || 1;
@@ -169,20 +198,19 @@ sub to_bytes {
 
     my $payload_len = length($self->{buffer});
     if ($payload_len <= 125) {
-        # TODO mask
-        $payload_len += 128 if $self->masked;
+        $payload_len |= 0b10000000 if $self->masked;
         $string .= pack 'C', $payload_len;
     }
-    elsif ($payload_len <= 2 ** 15) {
+    elsif ($payload_len <= 0xffff) {
         $string .= pack 'C', 126 + ($self->masked ? 128 : 0);
         $string .= pack 'n', $payload_len;
     }
     else {
         $string .= pack 'C', 127 + ($self->masked ? 128 : 0);
 
-        # 8 octets
-        $string .= pack 'N', 0;
-        $string .= pack 'N', $payload_len;
+        # Shifting by an amount >= to the system wordsize is undefined
+        $string .= pack 'N', $Config{ivsize} <= 4 ? 0 : $payload_len >> 32;
+        $string .= pack 'N', ($payload_len & 0xffffffff);
     }
 
     if ($self->masked) {
@@ -191,8 +219,6 @@ sub to_bytes {
         $mask = pack 'N', $mask;
 
         $string .= $mask;
-        # TODO
-
         $string .= $self->_mask($self->{buffer}, $mask);
     }
     else {
