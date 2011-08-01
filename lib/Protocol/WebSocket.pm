@@ -101,6 +101,8 @@ Jon Gentle
 
 Lee Aylward
 
+Chia-liang Kao
+
 =head1 AUTHOR
 
 Viacheslav Tykhanovskyi, C<vti@cpan.org>.
