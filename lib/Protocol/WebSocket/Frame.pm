@@ -147,10 +147,8 @@ sub next_bytes {
                 $bits = substr($bits, 32);
                 $payload_len = unpack 'N', pack 'B*', $bits;
             }
-
-            # This is not tested :(
             else {
-                $payload_len = unpack 'Q', pack 'B*', $bits;
+                $payload_len = unpack 'Q>', pack 'B*', $bits;
             }
 
             $offset += 8;
@@ -159,7 +157,7 @@ sub next_bytes {
         if ($payload_len > $self->{max_payload_size}) {
             $self->{buffer} = '';
             die
-              "Payload is too big. Deny big message or increase max_payload_size";
+              "Payload is too big. Deny big message ($payload_len) or increase max_payload_size ($self->{max_payload_size})";
         }
 
         my $mask;
