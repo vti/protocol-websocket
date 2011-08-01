@@ -159,7 +159,7 @@ sub next_bytes {
         if ($payload_len > $self->{max_payload_size}) {
             $self->{buffer} = '';
             die
-              "Payload is too big. Deny big message or increase max_payload_size";
+              "Payload is too big. Deny big message ($payload_len) or increase max_payload_size ($self->{max_payload_size})";
         }
 
         my $mask;
