@@ -147,10 +147,8 @@ sub next_bytes {
                 $bits = substr($bits, 32);
                 $payload_len = unpack 'N', pack 'B*', $bits;
             }
-
-            # This is not tested :(
             else {
-                $payload_len = unpack 'Q', pack 'B*', $bits;
+                $payload_len = unpack 'Q>', pack 'B*', $bits;
             }
 
             $offset += 8;
