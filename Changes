@@ -1,5 +1,9 @@
 Revision history for perl module Protocol::WebSocket
 
+0.00903 2011-08-08
+
+ - Support for draft-ietf-hybi-10 WebSocket protocol version
+
 0.00902 2011-05-12
 
  - API CHANGE: Frame's to_string now returns a Perl string, use to_bytes to get a
