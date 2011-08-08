@@ -1,46 +1,32 @@
 #!/usr/bin/env perl
 
-use 5.008007;
-
 use strict;
 use warnings;
 
-use ExtUtils::MakeMaker;
+use inc::Module::Install;
 
-my ($mm) = $ExtUtils::MakeMaker::VERSION =~ /^([^_]+)/;
+name 'Protocol-WebSocket';
 
-WriteMakefile(
-    NAME         => 'Protocol::WebSocket',
-    VERSION_FROM => 'lib/Protocol/WebSocket.pm',
-    ABSTRACT     => 'WebSocket request/response',
-    AUTHOR       => 'Viacheslav Tykhanovskyi <vti@cpan.org>',
+version_from 'lib/Protocol/WebSocket.pm';
+author 'Viacheslav Tykhanovskyi <vti@cpan.org>';
+abstract 'WebSocket request/response';
+license 'artistic_2';
+perl_version '5.008007';
 
-    ($mm < 6.3002 ? () : ('LICENSE' => 'artistic_2')),
+requires 'Carp'         => 0;
+requires 'Digest::MD5'  => 0;
+requires 'Digest::SHA1' => 0;
+requires 'Scalar::Util' => 0;
 
-    (   $mm < 6.46
-        ? ()
-        : ( META_MERGE => {
-                requires  => {perl => '5.008007'},
-                resources => {
-                    license    => 'http://dev.perl.org/licenses/',
-                    repository => 'http://github.com/vti/protocol-websocket',
-                    bugtracker =>
-                      'http://github.com/vti/protocol-websocket/issues'
-                },
-                no_index => {directory => [qw/t/]}
-            },
-            META_ADD => {
-                build_requires     => {},
-                configure_requires => {}
-            },
-        )
-    ),
+tests 't/*.t t/*/*.t t/*/*/*.t t/*/*/*/*.t';
 
-    PREREQ_PM => {
-        'Carp'         => 0,
-        'Digest::MD5'  => 0,
-        'Digest::SHA1' => 0,
-        'Scalar::Util' => 0,
-    },
-    test => {TESTS => 't/*.t t/*/*.t'}
-);
+no_index directory => 't';
+
+resources
+  bugtracker => 'http://github.com/vti/protocol-websocket/issues',
+  repository => 'http://github.com/vti/protocol-websocket/',
+  license    => 'http://dev.perl.org/licenses/';
+
+auto_install;
+
+WriteAll;
