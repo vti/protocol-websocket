@@ -135,7 +135,7 @@ sub next_bytes {
         elsif ($payload_len > 126) {
             return unless length($self->{buffer}) >= $offset + 4;
 
-            my $bits = join '', map { unpack 'B*' } split //,
+            my $bits = join '', map { unpack 'B*', $_ } split //,
               substr($self->{buffer}, $offset, 8);
 
             # Most significant bit must be 0.

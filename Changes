@@ -1,5 +1,9 @@
 Revision history for perl module Protocol::WebSocket
 
+0.00904 2011-08-15
+
+ - Fixed failing tests on perl-5.8.9
+
 0.00903 2011-08-08
 
  - Support for draft-ietf-hybi-10 WebSocket protocol version
