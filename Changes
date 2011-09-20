@@ -1,5 +1,10 @@
 Revision history for perl module Protocol::WebSocket
 
+0.00905 2011-09-20
+
+ - Fixed random mask generation
+ - Fixed 64bit detection
+
 0.00904 2011-08-15
 
  - Fixed failing tests on perl-5.8.9
