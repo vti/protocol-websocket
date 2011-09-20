@@ -7,6 +7,9 @@ use Config;
 use Encode ();
 use Scalar::Util 'readonly';
 
+use constant MAX_RAND_INT => 2 ** 32;
+use constant MATH_RANDOM_SECURE => eval "require Math::Random::Secure;";
+
 our %TYPES = (
     text   => 0x01,
     binary => 0x02,
@@ -261,8 +264,12 @@ sub to_bytes {
 
     if ($self->masked) {
 
-        # Not sure if perl provides good randomness
-        my $mask = $self->{mask} || rand(2**32);
+        my $mask = $self->{mask}
+          || (
+            MATH_RANDOM_SECURE
+            ? Math::Random::Secure::irand(MAX_RAND_INT)
+            : int(rand(MAX_RAND_INT))
+          );
 
         $mask = pack 'N', $mask;
 
@@ -325,6 +332,11 @@ Protocol::WebSocket::Frame - WebSocket Frame
 =head1 DESCRIPTION
 
 Construct or parse a WebSocket frame.
+
+=head1 RANDOM MASK GENERATION
+
+By default built-in C<rand> is used, this is not secure, so when
+L<Math::Random::Secure> is installed it is used instead.
 
 =head1 ATTRIBUTES
 
