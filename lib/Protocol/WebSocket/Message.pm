@@ -180,7 +180,7 @@ sub _parse_field {
     my $self = shift;
     my $line = shift;
 
-    my ($name, $value) = split ': ' => $line => 2;
+    my ($name, $value) = split /:\s*/ => $line => 2;
     unless (defined $name && defined $value) {
         $self->error('Invalid field');
         return;

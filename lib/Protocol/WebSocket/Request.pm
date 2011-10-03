@@ -327,7 +327,10 @@ sub _finalize {
     my $self = shift;
 
     return unless $self->upgrade && lc $self->upgrade eq 'websocket';
-    return unless $self->connection && $self->connection eq 'Upgrade';
+    my $connection = $self->connection;
+    return unless $connection;
+    my @connections = split /\s*,\s*/, $connection;
+    return unless grep { lc $_ eq 'upgrade' } @connections;
 
     my $origin =
         $self->version eq 'draft-ietf-hybi-10'
