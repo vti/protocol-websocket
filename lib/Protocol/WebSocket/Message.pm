@@ -186,6 +186,7 @@ sub _parse_field {
         return;
     }
 
+    #$name =~ s/^Sec-WebSocket-Origin$/Origin/i; # FIXME
     $self->field($name => $value);
 
     if ($name =~ m/^x-forwarded-proto$/i) {

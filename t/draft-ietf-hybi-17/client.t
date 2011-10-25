@@ -7,7 +7,7 @@ use Test::More tests => 8;
 
 use_ok 'Protocol::WebSocket::Handshake::Client';
 
-my $h = Protocol::WebSocket::Handshake::Client->new(version => 'draft-ietf-hybi-10');
+my $h = Protocol::WebSocket::Handshake::Client->new;
 $h->url('ws://example.com/demo');
 
 # Mocking
@@ -17,9 +17,9 @@ is $h->to_string => "GET /demo HTTP/1.1\x0d\x0a"
   . "Upgrade: WebSocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: example.com\x0d\x0a"
-  . "Sec-WebSocket-Origin: http://example.com\x0d\x0a"
+  . "Origin: http://example.com\x0d\x0a"
   . "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\x0d\x0a"
-  . "Sec-WebSocket-Version: 8\x0d\x0a"
+  . "Sec-WebSocket-Version: 13\x0d\x0a"
   . "\x0d\x0a";
 
 ok !$h->is_done;

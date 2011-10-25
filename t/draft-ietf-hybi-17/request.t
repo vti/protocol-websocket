@@ -27,13 +27,13 @@ is $req->state => 'fields';
 ok $req->parse("Connection: Upgrade\x0d\x0a");
 is $req->state => 'fields';
 ok $req->parse("Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\x0d\x0a");
-ok $req->parse("Sec-WebSocket-Origin: http://example.com\x0d\x0a");
+ok $req->parse("Origin: http://example.com\x0d\x0a");
 ok $req->parse("Sec-WebSocket-Protocol: chat, superchat\x0d\x0a");
-ok $req->parse("Sec-WebSocket-Version: 8\x0d\x0a\x0d\x0a");
+ok $req->parse("Sec-WebSocket-Version: 13\x0d\x0a\x0d\x0a");
 is $req->state => 'done';
 is $req->key   => 'dGhlIHNhbXBsZSBub25jZQ==';
 
-is $req->version       => 'draft-ietf-hybi-10';
+is $req->version       => 'draft-ietf-hybi-17';
 is $req->subprotocol   => 'chat, superchat';
 is $req->resource_name => '/chat';
 is $req->host          => 'server.example.com';
@@ -46,19 +46,18 @@ ok $req->parse("Host: server.example.com\x0d\x0a");
 ok $req->parse("Upgrade: websocket\x0d\x0a");
 ok $req->parse("Connection:keep-alive, Upgrade\x0d\x0a");
 ok $req->parse("Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\x0d\x0a");
-ok $req->parse("Sec-WebSocket-Origin: http://example.com\x0d\x0a");
+ok $req->parse("Origin: http://example.com\x0d\x0a");
 ok $req->parse("Sec-WebSocket-Protocol: chat, superchat\x0d\x0a");
-ok $req->parse("Sec-WebSocket-Version: 8\x0d\x0a\x0d\x0a");
+ok $req->parse("Sec-WebSocket-Version: 13\x0d\x0a\x0d\x0a");
 is $req->state         => 'done';
 is $req->key           => 'dGhlIHNhbXBsZSBub25jZQ==';
-is $req->version       => 'draft-ietf-hybi-10';
+is $req->version       => 'draft-ietf-hybi-17';
 is $req->subprotocol   => 'chat, superchat';
 is $req->resource_name => '/chat';
 is $req->host          => 'server.example.com';
 is $req->origin        => 'http://example.com';
 
 $req = Protocol::WebSocket::Request->new(
-    version       => 'draft-ietf-hybi-10',
     host          => 'server.example.com',
     origin        => 'http://example.com',
     subprotocol   => 'chat, superchat',
@@ -69,10 +68,10 @@ is $req->to_string => "GET /chat HTTP/1.1\x0d\x0a"
   . "Upgrade: WebSocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: server.example.com\x0d\x0a"
-  . "Sec-WebSocket-Origin: http://example.com\x0d\x0a"
+  . "Origin: http://example.com\x0d\x0a"
   . "Sec-WebSocket-Protocol: chat, superchat\x0d\x0a"
   . "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\x0d\x0a"
-  . "Sec-WebSocket-Version: 8\x0d\x0a"
+  . "Sec-WebSocket-Version: 13\x0d\x0a"
   . "\x0d\x0a";
 
 open my $fh, '<', 't/empty' or die $!;
@@ -85,10 +84,10 @@ $req = Protocol::WebSocket::Request->new_from_psgi(
         HTTP_UPGRADE                => 'websocket',
         HTTP_CONNECTION             => 'Upgrade',
         HTTP_HOST                   => 'server.example.com',
-        HTTP_SEC_WEBSOCKET_ORIGIN   => 'http://example.com',
+        HTTP_ORIGIN                 => 'http://example.com',
         HTTP_SEC_WEBSOCKET_PROTOCOL => 'chat, superchat',
         HTTP_SEC_WEBSOCKET_KEY      => 'dGhlIHNhbXBsZSBub25jZQ==',
-        HTTP_SEC_WEBSOCKET_VERSION  => 8
+        HTTP_SEC_WEBSOCKET_VERSION  => 13
     }
 );
 $req->parse($io);
@@ -100,4 +99,4 @@ is $req->host          => 'server.example.com';
 is $req->origin        => 'http://example.com';
 is $req->key           => 'dGhlIHNhbXBsZSBub25jZQ==';
 ok $req->is_done;
-is $req->version => 'draft-ietf-hybi-10';
+is $req->version => 'draft-ietf-hybi-17';

@@ -3,7 +3,7 @@ package Protocol::WebSocket;
 use strict;
 use warnings;
 
-our $VERSION = 0.00905;
+our $VERSION = 0.00906;
 
 1;
 __END__
@@ -51,13 +51,14 @@ or clients to provide WebSocket support.
 
 L<Protocol::WebSocket> supports the following WebSocket protocol versions:
 
-    draft-hixie-75
-    draft-ietf-hybi-00
+    draft-ietf-hybi-17 (latest)
     draft-ietf-hybi-10
+    draft-ietf-hybi-00
+    draft-hixie-75
 
-By default the latest (C<draft-ietf-hybi-10>) version is used. The WebSocket
-version is detected automatically on the server side. On the client side you
-have set a C<version> attribute to an appropriate value.
+By default the latest version is used. The WebSocket version is detected
+automatically on the server side. On the client side you have set a C<version>
+attribute to an appropriate value.
 
 L<Protocol::WebSocket> itself does not contain any code and cannot be used
 directly. Instead the following modules should be used:

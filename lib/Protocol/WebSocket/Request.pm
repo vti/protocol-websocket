@@ -33,8 +33,18 @@ sub new_from_psgi {
           $env->{HTTP_SEC_WEBSOCKET_PROTOCOL};
     }
 
+    if (exists $env->{HTTP_SEC_WEBSOCKET_VERSION}) {
+        $fields->{'sec-websocket-version'} =
+          $env->{HTTP_SEC_WEBSOCKET_VERSION};
+        if ($env->{HTTP_SEC_WEBSOCKET_VERSION} eq '13') {
+            $version = 'draft-ietf-hybi-17';
+        }
+        else {
+            $version = 'draft-ietf-hybi-10';
+        }
+    }
+
     if ($env->{HTTP_SEC_WEBSOCKET_KEY}) {
-        $version = 'draft-ietf-hybi-10';
         $fields->{'sec-websocket-key'} = $env->{HTTP_SEC_WEBSOCKET_KEY};
     }
     elsif ($env->{HTTP_SEC_WEBSOCKET_KEY1}) {
@@ -86,7 +96,7 @@ sub key2 { shift->_key('key2' => @_) }
 sub to_string {
     my $self = shift;
 
-    my $version = $self->version || 'draft-ietf-hybi-10';
+    my $version = $self->version || 'draft-ietf-hybi-17';
 
     my $string = '';
 
@@ -111,7 +121,7 @@ sub to_string {
       . $origin
       . "\x0d\x0a";
 
-    if ($version eq 'draft-ietf-hybi-10') {
+    if ($version eq 'draft-ietf-hybi-10' || $version eq 'draft-ietf-hybi-17') {
         my $key = $self->key;
 
         if (!$key) {
@@ -127,7 +137,10 @@ sub to_string {
           if defined $self->subprotocol;
 
         $string .= 'Sec-WebSocket-Key: ' . $key . "\x0d\x0a";
-        $string .= 'Sec-WebSocket-Version: ' . 8 . "\x0d\x0a";
+        $string
+          .= 'Sec-WebSocket-Version: '
+          . ($version eq 'draft-ietf-hybi-17' ? 13 : 8)
+          . "\x0d\x0a";
     }
     elsif ($version eq 'draft-ietf-hybi-00') {
         $self->_generate_keys;
@@ -190,7 +203,12 @@ sub _parse_body {
         $self->version('draft-ietf-hybi-00');
     }
     elsif ($self->key) {
-        $self->version('draft-ietf-hybi-10');
+        if ($self->field('sec-websocket-version') eq '13') {
+            $self->version('draft-ietf-hybi-17');
+        }
+        else {
+            $self->version('draft-ietf-hybi-10');
+        }
     }
     else {
         $self->version('draft-hixie-75');
@@ -327,15 +345,14 @@ sub _finalize {
     my $self = shift;
 
     return unless $self->upgrade && lc $self->upgrade eq 'websocket';
+
     my $connection = $self->connection;
     return unless $connection;
+
     my @connections = split /\s*,\s*/, $connection;
     return unless grep { lc $_ eq 'upgrade' } @connections;
 
-    my $origin =
-        $self->version eq 'draft-ietf-hybi-10'
-      ? $self->field('Sec-WebSocket-Origin')
-      : $self->field('Origin');
+    my $origin = $self->field('Sec-WebSocket-Origin') || $self->field('Origin');
     return unless $origin;
     $self->origin($origin);
 
