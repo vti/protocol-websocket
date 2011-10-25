@@ -86,7 +86,7 @@ sub headers {
             push @$headers, 'Sec-WebSocket-Location' => $location->to_string;
         }
     }
-    elsif ($version eq 'draft-ietf-hybi-10') {
+    elsif ($version eq 'draft-ietf-hybi-10' || $version eq 'draft-ietf-hybi-17') {
         Carp::croak(qq/key is required/) unless defined $self->key;
 
         my $key = $self->key;
