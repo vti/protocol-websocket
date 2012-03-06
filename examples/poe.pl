@@ -30,7 +30,7 @@ POE::Component::Server::TCP->new(
         $frame->append($chunk);
 
         while (my $message = $frame->next) {
-            $_[HEAP]{client}->put($frame->new($message)->to_string);
+            $_[HEAP]{client}->put($frame->new($message)->to_bytes);
         }
     }
 );

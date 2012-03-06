@@ -49,7 +49,7 @@ sub mux_input {
         $frame->append($$input);
 
         while (my $message = $frame->next) {
-            print $c $frame->new($message)->to_string;
+            print $c $frame->new($message)->to_bytes;
         }
     }
 

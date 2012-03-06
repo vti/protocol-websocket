@@ -33,7 +33,7 @@
         my $frame = $self->frame;
         $frame->append($args->{data});
         while (my $message = $frame->next) {
-            $self->put($frame->new($message)->to_string);
+            $self->put($frame->new($message)->to_bytes);
         }
     }
 }

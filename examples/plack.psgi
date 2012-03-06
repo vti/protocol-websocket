@@ -30,7 +30,7 @@ my $psgi_app = sub {
                 $frame->append($_[0]->rbuf);
 
                 while (my $message = $frame->next) {
-                    $h->push_write(Protocol::WebSocket::Frame->new($message)->to_string);
+                    $h->push_write(Protocol::WebSocket::Frame->new($message)->to_bytes);
                 }
             }
         );

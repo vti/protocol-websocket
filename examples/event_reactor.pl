@@ -34,7 +34,7 @@ EventReactor->new(
                 $frame->append($chunk);
 
                 while (my $message = $frame->next) {
-                    $client->write($frame->new($message)->to_string);
+                    $client->write($frame->new($message)->to_bytes);
                 }
             }
         );

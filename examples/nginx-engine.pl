@@ -39,7 +39,7 @@ ngxe_server(
                     $frame->append($recv);
 
                     while (my $message = $frame->next) {
-                        $send .= $frame->new($message)->to_string;
+                        $send .= $frame->new($message)->to_bytes;
                     }
                 }
 

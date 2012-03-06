@@ -37,7 +37,7 @@ my $listener = IO::Async::Listener->new(
                 $frame->append($$buffref);
 
                 while (my $message = $frame->next) {
-                    $self->write($frame->new($message)->to_string);
+                    $self->write($frame->new($message)->to_bytes);
                 }
 
                 $$buffref = "";

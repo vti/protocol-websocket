@@ -40,7 +40,7 @@ AnyEvent::Socket::tcp_server undef, 3000, sub {
             $frame->append($chunk);
 
             while (my $message = $frame->next) {
-                $hdl->push_write($frame->new($message)->to_string);
+                $hdl->push_write($frame->new($message)->to_bytes);
             }
         }
     );

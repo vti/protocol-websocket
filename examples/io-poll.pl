@@ -63,7 +63,7 @@ LOOP: while (1) {
         $frame->append($chunk);
 
         while (defined(my $message = $frame->next)) {
-            $buffer .= $frame->new($message)->to_string;
+            $buffer .= $frame->new($message)->to_bytes;
         }
     }
 

@@ -55,7 +55,7 @@ my $serv = lambda {
         $frame->append($match);
 
         while (my $message = $frame->next) {
-            $res .= $frame->new($message)->to_string;
+            $res .= $frame->new($message)->to_bytes;
         }
 
         again;

@@ -46,7 +46,7 @@ sub ie_input {
     $frame->append($$input_buffer_reference);
 
     while (my $message = $frame->next) {
-        print $client $frame->new($message)->to_string;
+        print $client $frame->new($message)->to_bytes;
     }
 
     $$input_buffer_reference = '';
