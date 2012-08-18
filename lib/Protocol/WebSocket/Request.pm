@@ -176,7 +176,9 @@ sub parse {
 
     my $retval = $self->SUPER::parse($_[0]);
 
-    if (!$self->version && ($self->is_body || $self->is_done)) {
+    if (!$self->{finalized} && ($self->is_body || $self->is_done)) {
+        $self->{finalized} = 1;
+
         if ($self->key1 && $self->key2) {
             $self->version('draft-ietf-hybi-00');
         }
@@ -190,6 +192,11 @@ sub parse {
         }
         else {
             $self->version('draft-hixie-75');
+        }
+
+        if (!$self->_finalize) {
+            $self->error('Not a valid request');
+            return;
         }
     }
 
@@ -231,10 +238,7 @@ sub _parse_body {
         return;
     }
 
-    return $self if $self->_finalize;
-
-    $self->error('Not a valid request');
-    return;
+    return $self;
 }
 
 sub _number {

@@ -71,11 +71,10 @@ sub number2   { @_ > 1 ? $_[0]->{number2}   = $_[1] : $_[0]->{number2} }
 sub challenge { @_ > 1 ? $_[0]->{challenge} = $_[1] : $_[0]->{challenge} }
 
 sub checksum {
-    my $self     = shift;
-    my $checksum = shift;
+    my $self = shift;
 
-    if (defined $checksum) {
-        $self->{checksum} = $checksum;
+    if (@_) {
+        $self->{checksum} = $_[0];
         return $self;
     }
 
@@ -85,7 +84,7 @@ sub checksum {
     Carp::croak(qq/number2 is required/)   unless defined $self->number2;
     Carp::croak(qq/challenge is required/) unless defined $self->challenge;
 
-    $checksum = '';
+    my $checksum = '';
     $checksum .= pack 'N' => $self->number1;
     $checksum .= pack 'N' => $self->number2;
     $checksum .= $self->challenge;
