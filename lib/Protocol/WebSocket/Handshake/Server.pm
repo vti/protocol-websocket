@@ -6,6 +6,7 @@ use warnings;
 use base 'Protocol::WebSocket::Handshake';
 
 use Protocol::WebSocket::Request;
+use Protocol::WebSocket::Frame;
 
 sub new_from_psgi {
     my $class = shift;
@@ -54,6 +55,12 @@ sub parse {
 
 sub is_done   { shift->req->is_done }
 sub to_string { shift->res->to_string }
+
+sub build_frame {
+    my $self = shift;
+
+    return Protocol::WebSocket::Frame->new(version => $self->version, @_);
+}
 
 1;
 __END__

@@ -21,8 +21,7 @@ Protocol::WebSocket - WebSocket protocol
 
     $hs->is_done; # tells us when handshake is done
 
-    # Passing version is important for backwards compatibility
-    my $frame = Protocol::WebSocket::Frame->new(version => $hs->version);
+    my $frame = $hs->build_frame;
 
     $frame->append('some data from the client');
 
@@ -31,7 +30,7 @@ Protocol::WebSocket - WebSocket protocol
 
             # Send close frame back
             send(
-                Protocol::WebSocket::Frame->new(
+                $hs->build_frame(
                     type    => 'close',
                     version => $version
                 )
