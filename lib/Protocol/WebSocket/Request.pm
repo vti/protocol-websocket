@@ -53,7 +53,7 @@ sub new_from_psgi {
         $fields->{'sec-websocket-key2'} = $env->{HTTP_SEC_WEBSOCKET_KEY2};
     }
 
-    if ($version eq 'draft-ietf-hybi-10') {
+    if ($version eq 'draft-ietf-hybi-10' || $version eq 'draft-ietf-hybi-17') {
         $fields->{'sec-websocket-origin'} = $env->{HTTP_SEC_WEBSOCKET_ORIGIN};
     }
     else {
@@ -353,7 +353,7 @@ sub _finalize {
     return unless grep { lc $_ eq 'upgrade' } @connections;
 
     my $origin = $self->field('Sec-WebSocket-Origin') || $self->field('Origin');
-    return unless $origin;
+    #return unless $origin;
     $self->origin($origin);
 
     $self->secure(1) if $self->origin =~ m{^https:};
