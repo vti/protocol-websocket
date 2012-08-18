@@ -171,6 +171,31 @@ sub to_string {
     return $string;
 }
 
+sub parse {
+    my $self = shift;
+
+    my $retval = $self->SUPER::parse($_[0]);
+
+    if (!$self->version && ($self->is_body || $self->is_done)) {
+        if ($self->key1 && $self->key2) {
+            $self->version('draft-ietf-hybi-00');
+        }
+        elsif ($self->key) {
+            if ($self->field('sec-websocket-version') eq '13') {
+                $self->version('draft-ietf-hybi-17');
+            }
+            else {
+                $self->version('draft-ietf-hybi-10');
+            }
+        }
+        else {
+            $self->version('draft-hixie-75');
+        }
+    }
+
+    return $retval;
+}
+
 sub _parse_first_line {
     my ($self, $line) = @_;
 
@@ -199,19 +224,6 @@ sub _parse_body {
 
         my $challenge = substr $self->{buffer}, 0, 8, '';
         $self->challenge($challenge);
-
-        $self->version('draft-ietf-hybi-00');
-    }
-    elsif ($self->key) {
-        if ($self->field('sec-websocket-version') eq '13') {
-            $self->version('draft-ietf-hybi-17');
-        }
-        else {
-            $self->version('draft-ietf-hybi-10');
-        }
-    }
-    else {
-        $self->version('draft-hixie-75');
     }
 
     if (length $self->{buffer}) {

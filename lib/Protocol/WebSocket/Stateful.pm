@@ -17,6 +17,7 @@ sub state { @_ > 1 ? $_[0]->{state} = $_[1] : $_[0]->{state} }
 
 sub done     { shift->state('done') }
 sub is_state { shift->state eq shift }
+sub is_body  { shift->is_state('body') }
 sub is_done  { shift->is_state('done') }
 
 1;

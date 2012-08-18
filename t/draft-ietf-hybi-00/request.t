@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 59;
+use Test::More tests => 60;
 
 use IO::Handle;
 
@@ -42,6 +42,20 @@ is $req->resource_name => '/demo';
 is $req->host          => 'example.com';
 is $req->origin        => 'http://example.com';
 is $req->checksum      => 'fQJ,fN/4F4!~K~MH';
+
+$req = Protocol::WebSocket::Request->new;
+$req->parse("GET /demo HTTP/1.1\x0d\x0a");
+$req->parse("Upgrade: WebSocket\x0d\x0a");
+$req->parse("Connection: Upgrade\x0d\x0a");
+$req->parse("Host: example.com\x0d\x0a");
+$req->parse("Origin: http://example.com\x0d\x0a");
+$req->parse("Sec-WebSocket-Protocol: sample\x0d\x0a");
+$req->parse(
+    "Sec-WebSocket-Key1: 18x 6]8vM;54 *(5:  {   U1]8  z [  8\x0d\x0a");
+$req->parse(
+    "Sec-WebSocket-Key2: 1_ tx7X d  <  nw  334J702) 7]o}` 0\x0d\x0a");
+$req->parse("\x0d\x0a");
+is $req->version, 'draft-ietf-hybi-00';
 
 $req = Protocol::WebSocket::Request->new;
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
