@@ -45,6 +45,8 @@ Create a new L<Protocol::WebSocket::Stateful> instance.
 
 =head2 C<is_state>
 
+=head2 C<is_body>
+
 =head2 C<is_done>
 
 =cut

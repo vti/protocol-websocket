@@ -140,9 +140,19 @@ on error.
 
 When buffer is passed it's modified (unless readonly).
 
+=head2 C<build_frame>
+
+    $handshake->build_frame;
+
+Builds L<Protocol::WebSocket::Frame> with an appropriate version.
+
 =head2 C<to_string>
 
 Construct a WebSocket server response.
+
+=head2 C<is_body>
+
+Check whether handshake is in body state.
 
 =head2 C<is_done>
 

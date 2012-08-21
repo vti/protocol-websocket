@@ -294,6 +294,8 @@ Construct a WebSocket response.
 
 =head2 C<cookies>
 
+=head2 C<key>
+
 =head2 C<key1>
 
     $self->key1;
