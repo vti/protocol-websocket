@@ -36,7 +36,7 @@ $url = Protocol::WebSocket::URL->new;
 ok $url->parse('ws://example.com/demo?foo=bar');
 ok !$url->secure;
 is $url->host          => 'example.com';
-is $url->resource_name => '/demo';
+is $url->resource_name => '/demo?foo=bar';
 
 $url = Protocol::WebSocket::URL->new;
 ok $url->parse('wss://example.com:3000');

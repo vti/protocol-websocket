@@ -103,6 +103,8 @@ Lee Aylward
 
 Chia-liang Kao
 
+Atomer Ju
+
 =head1 AUTHOR
 
 Viacheslav Tykhanovskyi, C<vti@cpan.org>.

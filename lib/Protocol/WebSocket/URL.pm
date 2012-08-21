@@ -38,9 +38,10 @@ sub parse {
     $self->host($host);
     $self->port($port);
 
-    my ($path) = $string =~ m{^$scheme://(?:.*?)(/.*?)(?:\?|$)};
-    $path = '/' unless defined $path && $path ne '';
-    $self->resource_name($path);
+    # path and query
+    my ($pnq) = $string =~ m{^$scheme://(?:.*?)(/.*)$};
+    $pnq = '/' unless defined $pnq && $pnq ne '';
+    $self->resource_name($pnq);
 
     return $self;
 }

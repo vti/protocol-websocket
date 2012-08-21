@@ -1,5 +1,12 @@
 Revision history for perl module Protocol::WebSocket
 
+0.10
+
+ - Fixed origin issue in hybi-17
+ - Added query string in resource name (Atomer Ju)
+ - Added possibility to write headers before receiving a nonce (HAProxy)
+ - Updated examples
+
 0.00906 2011-10-30
 
  - Support draft-ietf-hybi-17
