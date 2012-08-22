@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 30;
+use Test::More tests => 36;
 
 use_ok 'Protocol::WebSocket::URL';
 
@@ -11,6 +11,7 @@ my $url = Protocol::WebSocket::URL->new;
 ok $url->parse('ws://example.com');
 ok !$url->secure;
 is $url->host          => 'example.com';
+is $url->port => '80';
 is $url->resource_name => '/';
 
 $url = Protocol::WebSocket::URL->new;
@@ -37,6 +38,13 @@ ok $url->parse('ws://example.com/demo?foo=bar');
 ok !$url->secure;
 is $url->host          => 'example.com';
 is $url->resource_name => '/demo?foo=bar';
+
+$url = Protocol::WebSocket::URL->new;
+ok $url->parse('wss://example.com');
+ok $url->secure;
+is $url->host          => 'example.com';
+is $url->port          => '443';
+is $url->resource_name => '/';
 
 $url = Protocol::WebSocket::URL->new;
 ok $url->parse('wss://example.com:3000');

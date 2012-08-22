@@ -36,6 +36,7 @@ sub parse {
     my ($host, $port) = $string =~ m{^$scheme://([^:\/]+)(?::(\d+))?(?:|\/|$)};
     $host = '/' unless defined $host && $host ne '';
     $self->host($host);
+    $port ||= $self->secure ? 443 : 80;
     $self->port($port);
 
     # path and query
@@ -78,7 +79,7 @@ Protocol::WebSocket::URL - WebSocket URL
     $url->to_string; # wss://example.com:3000
 
     # Parse
-    my $url = Protocol::WebSocket::URL->new('wss://example.com:3000);
+    my $url = Protocol::WebSocket::URL->new->parse('wss://example.com:3000);
     $url->host;   # example.com
     $url->port;   # 3000
     $url->secure; # 1
