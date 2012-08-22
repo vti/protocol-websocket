@@ -1,5 +1,11 @@
 Revision history for perl module Protocol::WebSocket
 
+0.11
+
+ - Added wsconsole
+ - Fixed default version in WebSocket Frame
+ - Fixed default ports in WebSocket URL
+
 0.10
 
  - Fixed origin issue in hybi-17
