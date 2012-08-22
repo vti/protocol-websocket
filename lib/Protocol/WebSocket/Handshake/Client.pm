@@ -81,7 +81,9 @@ sub _set_url {
     my $req = $self->req;
 
     my $host = $url->host;
-    $host .= ':' . $url->port if defined $url->port;
+    $host .= ':' . $url->port
+      if defined $url->port
+      && ($url->secure ? $url->port ne '443' : $url->port ne '80');
     $req->host($host);
 
     $req->resource_name($url->resource_name);
