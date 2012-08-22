@@ -8,6 +8,7 @@ use base 'Protocol::WebSocket::Handshake';
 require Carp;
 
 use Protocol::WebSocket::URL;
+use Protocol::WebSocket::Frame;
 
 sub new {
     my $self = shift->SUPER::new(@_);
@@ -60,6 +61,12 @@ sub parse {
 
 sub is_done   { shift->res->is_done }
 sub to_string { shift->req->to_string }
+
+sub build_frame {
+    my $self = shift;
+
+    return Protocol::WebSocket::Frame->new(masked => 1, version => $self->version, @_);
+}
 
 sub _build_url { Protocol::WebSocket::URL->new }
 
