@@ -5,6 +5,11 @@ use warnings;
 
 our $VERSION = '0.10';
 
+use Protocol::WebSocket::Frame;
+use Protocol::WebSocket::Handshake::Client;
+use Protocol::WebSocket::Handshake::Server;
+use Protocol::WebSocket::URL;
+
 1;
 __END__
 
