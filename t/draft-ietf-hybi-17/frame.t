@@ -5,13 +5,15 @@ use warnings;
 
 use utf8;
 
-use Test::More tests => 39;
+use Test::More tests => 40;
 
 use Encode;
 
 use_ok 'Protocol::WebSocket::Frame';
 
 my $f = Protocol::WebSocket::Frame->new;
+
+is $f->version, 'draft-ietf-hybi-17';
 
 $f->append;
 ok not defined $f->next;

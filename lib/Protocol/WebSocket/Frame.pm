@@ -43,7 +43,7 @@ sub new {
         $self->{buffer} = $buffer;
     }
 
-    $self->{version} ||= 'draft-ietf-hidy-10';
+    $self->{version} ||= 'draft-ietf-hybi-17';
 
     $self->{fragments} = [];
 
