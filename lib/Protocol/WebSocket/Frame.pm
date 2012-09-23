@@ -299,15 +299,11 @@ sub _mask {
     my $self = shift;
     my ($payload, $mask) = @_;
 
-    my @mask = split //, $mask;
+    $mask = $mask x (int(length($payload) / 4) + 1);
+    $mask = substr($mask, 0, length($payload));
+    $payload ^= $mask;
 
-    my @payload = split //, $payload;
-    for (my $i = 0; $i < @payload; $i++) {
-        my $j = $i % 4;
-        $payload[$i] ^= $mask[$j];
-    }
-
-    return join '', @payload;
+    return $payload;
 }
 
 1;

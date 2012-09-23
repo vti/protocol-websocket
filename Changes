@@ -1,5 +1,9 @@
 Revision history for perl module Protocol::WebSocket
 
+0.12
+
+ - Improved frame performance (Chuck Bredestege)
+
 0.11
 
  - Added wsconsole
