@@ -36,7 +36,7 @@ while (1) {
 }
 
 my $hs    = Protocol::WebSocket::Handshake::Server->new;
-my $frame = Protocol::WebSocket::Frame->new;
+my $frame = $hs->build_frame;
 
 my $buffer = '';
 

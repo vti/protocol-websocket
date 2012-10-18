@@ -25,6 +25,7 @@ my $psgi_app = sub {
 
         $h->push_write($hs->to_string);
 
+        $h->on_eof(sub {});
         $h->on_read(
             sub {
                 $frame->append($_[0]->rbuf);

@@ -37,7 +37,7 @@ debug("! Using version '$version'");
 debug("! Connecting to '" . $ws_url->host . ':' . $ws_url->port . "'");
 my ($host, $port) = ($ws_url->host, $ws_url->port);
 tcp_connect $host, $port, sub {
-    my ($fh) = @_ or die "Connect failed: $!";
+    my ($fh) = @_ or return $cv->send("Connect failed: $!");
 
     debug("! Connected");
 
@@ -74,7 +74,7 @@ tcp_connect $host, $port, sub {
             else {
                 debug("< Reading handshake");
                 debug($buf);
-                $hs->parse($buf) or die 'Handshake failed: ' . $hs->error;
+                $hs->parse($buf) or return $cv->send('Handshake failed: ' . $hs->error);
             }
         }
     );
@@ -102,4 +102,4 @@ my $stdin = AnyEvent::Handle->new(
     }
 );
 
-$cv->wait;
+warn $cv->wait;
