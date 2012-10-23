@@ -372,7 +372,9 @@ sub _finalize {
     #return unless $origin;
     $self->origin($origin);
 
-    $self->secure(1) if $self->origin =~ m{^https:};
+    if (defined $self->origin) {
+        $self->secure(1) if $self->origin =~ m{^https:};
+    }
 
     my $host = $self->field('Host');
     return unless $host;
