@@ -3,6 +3,7 @@ Revision history for perl module Protocol::WebSocket
 0.12
 
  - Improved frame performance (Chuck Bredestege)
+ - Check origin only if origin is present (Matthew Lien)
 
 0.11
 
