@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 104;
+use Test::More tests => 110;
 
 use IO::Handle;
 
@@ -25,15 +25,18 @@ ok $req->parse("Connection: Upgrade\x0d\x0a");
 is $req->state => 'fields';
 ok $req->parse("Host: example.com\x0d\x0a");
 is $req->state => 'fields';
+ok $req->parse("Cookie: foo=bar;alice=bob\x0d\x0a");
+is $req->state => 'fields';
 ok $req->parse("Origin: http://example.com\x0d\x0a");
 is $req->state => 'fields';
 ok $req->parse("\x0d\x0a");
 is $req->state => 'done';
 
-is $req->version       => 'draft-hixie-75';
-is $req->resource_name => '/demo';
-is $req->host          => 'example.com';
-is $req->origin        => 'http://example.com';
+is $req->version            => 'draft-hixie-75';
+is $req->resource_name      => '/demo';
+is $req->host               => 'example.com';
+is $req->cookies->to_string => 'foo=bar; alice=bob';
+is $req->origin             => 'http://example.com';
 
 $req = Protocol::WebSocket::Request->new;
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
@@ -91,9 +94,12 @@ ok $req->parse("Cookie: \$Version=1; foo=bar; \$Path=/\x0d\x0a");
 ok $req->parse("\x0d\x0a");
 ok $req->is_done;
 
-is $req->cookies->[0]->version => 1;
-is $req->cookies->[0]->name    => 'foo';
-is $req->cookies->[0]->value   => 'bar';
+is $req->cookies->pairs->[0][0] => '$Version';
+is $req->cookies->pairs->[0][1] => '1';
+is $req->cookies->pairs->[1][0] => 'foo';
+is $req->cookies->pairs->[1][1] => 'bar';
+is $req->cookies->pairs->[2][0] => '$Path';
+is $req->cookies->pairs->[2][1] => '/';
 
 $req = Protocol::WebSocket::Request->new;
 $req->parse("GET /demo HTTP/1.1\x0d\x0a");
@@ -119,12 +125,14 @@ ok $req->secure;
 $req = Protocol::WebSocket::Request->new(
     version       => 'draft-hixie-75',
     host          => 'example.com',
+    cookies       => Protocol::WebSocket::Cookie->new->parse('foo=bar; alice=bob'),
     resource_name => '/demo'
 );
 is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
   . "Upgrade: WebSocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: example.com\x0d\x0a"
+  . "Cookie: foo=bar; alice=bob\x0d\x0a"
   . "Origin: http://example.com\x0d\x0a"
   . "\x0d\x0a";
 
