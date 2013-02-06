@@ -18,6 +18,8 @@ sub new_from_psgi {
 
     my $version = '';
 
+    my $cookies;
+
     my $fields = {
         upgrade    => $env->{HTTP_UPGRADE},
         connection => $env->{HTTP_CONNECTION},
@@ -60,9 +62,14 @@ sub new_from_psgi {
         $fields->{origin} = $env->{HTTP_ORIGIN};
     }
 
+    if ($env->{HTTP_COOKIE}) {
+        $cookies = Protocol::WebSocket::Cookie->new->parse($env->{HTTP_COOKIE});
+    }
+
     my $self = $class->new(
         version       => $version,
         fields        => $fields,
+        cookies       => $cookies,
         resource_name => "$env->{SCRIPT_NAME}$env->{PATH_INFO}"
           . ($env->{QUERY_STRING} ? "?$env->{QUERY_STRING}" : "")
     );
@@ -77,7 +84,18 @@ sub new_from_psgi {
     return $self;
 }
 
-sub cookies { shift->{cookies} }
+sub cookies {
+    if(@_ > 1) {
+        my $cookie = Protocol::WebSocket::Cookie->new;
+        return unless $_[1];
+
+        if (my $cookies = $cookie->parse($_[1])) {
+            $_[0]->{cookies} = $cookies;
+        }
+    } else {
+        return $_[0]->{cookies};
+    }
+}
 
 sub resource_name {
     @_ > 1 ? $_[0]->{resource_name} = $_[1] : $_[0]->{resource_name} || '/';
@@ -109,6 +127,12 @@ sub to_string {
 
     Carp::croak(qq/Host is required/) unless defined $self->host;
     $string .= "Host: " . $self->host . "\x0d\x0a";
+
+    if (ref $self->{cookies} eq 'Protocol::WebSocket::Cookie') {
+        my $cookie_string = $self->{cookies}->to_string;
+        $string .= 'Cookie: ' . $cookie_string . "\x0d\x0a"
+            if $cookie_string;
+    }
 
     my $origin = $self->origin ? $self->origin : 'http://' . $self->host;
     $origin =~ s{^http:}{https:} if $self->secure;
@@ -161,8 +185,6 @@ sub to_string {
     else {
         Carp::croak('Version ' . $self->version . ' is not supported');
     }
-
-    # TODO cookies
 
     $string .= "\x0d\x0a";
 
@@ -384,11 +406,7 @@ sub _finalize {
       || $self->field('WebSocket-Protocol');
     $self->subprotocol($subprotocol) if $subprotocol;
 
-    my $cookie = $self->_build_cookie;
-    if (my $cookies = $cookie->parse($self->field('Cookie'))) {
-        $self->{cookies} = $cookies;
-    }
-
+    $self->cookies($self->field('Cookie'));
     return $self;
 }
 
