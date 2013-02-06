@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 60;
+use Test::More tests => 64;
 
 use IO::Handle;
 
@@ -24,6 +24,8 @@ ok $req->parse("Connection: Upgrade\x0d\x0a");
 is $req->state => 'fields';
 ok $req->parse("Host: example.com\x0d\x0a");
 is $req->state => 'fields';
+ok $req->parse("Cookie: foo=bar;alice=bob\x0d\x0a");
+is $req->state => 'fields';
 ok $req->parse("Origin: http://example.com\x0d\x0a");
 is $req->state => 'fields';
 ok $req->parse(
@@ -37,11 +39,12 @@ is $req->number1   => '155712099';
 is $req->number2   => '173347027';
 is $req->challenge => 'Tm[K T2u';
 
-is $req->version       => 'draft-ietf-hybi-00';
-is $req->resource_name => '/demo';
-is $req->host          => 'example.com';
-is $req->origin        => 'http://example.com';
-is $req->checksum      => 'fQJ,fN/4F4!~K~MH';
+is $req->version            => 'draft-ietf-hybi-00';
+is $req->resource_name      => '/demo';
+is $req->host               => 'example.com';
+is $req->origin             => 'http://example.com';
+is $req->checksum           => 'fQJ,fN/4F4!~K~MH';
+is $req->cookies->to_string => 'foo=bar; alice=bob';
 
 $req = Protocol::WebSocket::Request->new;
 $req->parse("GET /demo HTTP/1.1\x0d\x0a");
@@ -75,6 +78,7 @@ is $req->subprotocol => 'sample';
 $req = Protocol::WebSocket::Request->new(
     version       => 'draft-ietf-hybi-00',
     host          => 'example.com',
+    cookies       => Protocol::WebSocket::Cookie->new->parse('foo=bar; alice=bob'),
     resource_name => '/demo',
     key1          => '18x 6]8vM;54 *(5:  {   U1]8  z [  8',
     key2          => '1_ tx7X d  <  nw  334J702) 7]o}` 0',
@@ -84,6 +88,7 @@ is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
   . "Upgrade: WebSocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: example.com\x0d\x0a"
+  . "Cookie: foo=bar; alice=bob\x0d\x0a"
   . "Origin: http://example.com\x0d\x0a"
   . "Sec-WebSocket-Key1: 18x 6]8vM;54 *(5:  {   U1]8  z [  8\x0d\x0a"
   . "Sec-WebSocket-Key2: 1_ tx7X d  <  nw  334J702) 7]o}` 0\x0d\x0a"
@@ -148,6 +153,7 @@ $req = Protocol::WebSocket::Request->new_from_psgi(
         HTTP_UPGRADE                => 'WebSocket',
         HTTP_CONNECTION             => 'Upgrade',
         HTTP_HOST                   => 'example.com',
+        HTTP_COOKIE                 => 'foo=bar',
         HTTP_ORIGIN                 => 'http://example.com',
         HTTP_SEC_WEBSOCKET_PROTOCOL => 'sample',
         HTTP_SEC_WEBSOCKET_KEY1     => '18x 6]8vM;54 *(5:  {   U1]8  z [  8',
@@ -156,13 +162,14 @@ $req = Protocol::WebSocket::Request->new_from_psgi(
     }
 );
 $req->parse($io);
-is $req->resource_name => '/demo?foo=bar';
-is $req->subprotocol   => 'sample';
-is $req->upgrade       => 'WebSocket';
-is $req->connection    => 'Upgrade';
-is $req->host          => 'example.com';
-is $req->origin        => 'http://example.com';
-is $req->key1          => '18x 6]8vM;54 *(5:  {   U1]8  z [  8';
-is $req->key2          => '1_ tx7X d  <  nw  334J702) 7]o}` 0';
+is $req->resource_name      => '/demo?foo=bar';
+is $req->subprotocol        => 'sample';
+is $req->upgrade            => 'WebSocket';
+is $req->connection         => 'Upgrade';
+is $req->host               => 'example.com';
+is $req->cookies->to_string => 'foo=bar';
+is $req->origin             => 'http://example.com';
+is $req->key1               => '18x 6]8vM;54 *(5:  {   U1]8  z [  8';
+is $req->key2               => '1_ tx7X d  <  nw  334J702) 7]o}` 0';
 ok $req->is_done;
 is $req->version => 'draft-ietf-hybi-00';
