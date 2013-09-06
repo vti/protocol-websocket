@@ -79,7 +79,7 @@ Protocol::WebSocket::URL - WebSocket URL
     $url->to_string; # wss://example.com:3000
 
     # Parse
-    my $url = Protocol::WebSocket::URL->new->parse('wss://example.com:3000);
+    my $url = Protocol::WebSocket::URL->new->parse('wss://example.com:3000');
     $url->host;   # example.com
     $url->port;   # 3000
     $url->secure; # 1
