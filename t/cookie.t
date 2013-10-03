@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 29;
+use Test::More;
 
 use_ok 'Protocol::WebSocket::Cookie';
 use_ok 'Protocol::WebSocket::Cookie::Response';
@@ -83,3 +83,15 @@ is $cookies->[0]->path   => '/';
 is $cookies->[1]->name   => 'bar';
 is $cookies->[1]->value  => 'baz';
 is $cookies->[1]->domain => '.example.com';
+
+subtest 'parse when no version is available' => sub {
+    $cookie = Protocol::WebSocket::Cookie::Request->new;
+    $cookies = $cookie->parse('foo=bar; $Path=/; $Domain=.example.com');
+    is $cookies->[0]->name    => 'foo';
+    is $cookies->[0]->value   => 'bar';
+    is $cookies->[0]->version => 1;
+    is $cookies->[0]->path    => '/';
+    is $cookies->[0]->domain  => '.example.com';
+};
+
+done_testing;
