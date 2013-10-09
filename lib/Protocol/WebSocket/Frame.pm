@@ -79,7 +79,9 @@ sub next {
     return Encode::decode('UTF-8', $bytes);
 }
 
-sub fin    { @_ > 1 ? $_[0]->{fin}    = $_[1] : $_[0]->{fin} }
+sub fin    {   @_ > 1                ? $_[0]->{fin} = $_[1]
+             : defined($_[0]->{fin}) ? $_[0]->{fin}
+                                     : 1 }
 sub rsv    { @_ > 1 ? $_[0]->{rsv}    = $_[1] : $_[0]->{rsv} }
 sub opcode { @_ > 1 ? $_[0]->{opcode} = $_[1] : $_[0]->{opcode} || 1 }
 sub masked { @_ > 1 ? $_[0]->{masked} = $_[1] : $_[0]->{masked} }
@@ -243,7 +245,7 @@ sub to_bytes {
         $opcode = $self->opcode || 1;
     }
 
-    $string .= pack 'C', ($opcode + 128);
+    $string .= pack 'C', ($opcode + ($self->fin ? 128 : 0));
 
     my $payload_len = length($self->{buffer});
     if ($payload_len <= 125) {
@@ -349,11 +351,30 @@ Frame's type. C<text> by default. Other accepted values:
 
 =head2 C<new>
 
-    Protocol::WebSocket::Frame->new('data');
+    Protocol::WebSocket::Frame->new('data');   ## same as (buffer => 'data')
     Protocol::WebSocket::Frame->new(buffer => 'data', type => 'close');
 
 Create a new L<Protocol::WebSocket::Frame> instance. Automatically detect if the
 passed data is a Perl string or bytes.
+
+When called with more than one arguments, it takes the following named arguments
+(all of them are optional).
+
+=over
+
+=item C<buffer> => STR (default: "")
+
+The payload of the frame.
+
+=item C<type> => TYPE_STR (default: C<"text">)
+
+The type of the frame. See the L</ATTRIBUTES> above.
+
+=item C<fin> => BOOL (default: C<1>)
+
+"fin" flag of the frame. "fin" flag must be 1 in the ending frame of fragments.
+
+=back
 
 =head2 C<is_text>
 
@@ -374,6 +395,13 @@ Check if frame is a pong response.
 =head2 C<is_close>
 
 Check if frame is of close type.
+
+=head2 C<fin>
+
+    $fin = $frame->fin;
+    $frame->fin(0);
+
+Get/set "fin" flag.
 
 =head2 C<append>
 
