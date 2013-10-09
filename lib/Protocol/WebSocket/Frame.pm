@@ -336,17 +336,6 @@ Construct or parse a WebSocket frame.
 By default built-in C<rand> is used, this is not secure, so when
 L<Math::Random::Secure> is installed it is used instead.
 
-=head1 ATTRIBUTES
-
-=head2 C<type>
-
-Frame's type. C<text> by default. Other accepted values:
-
-    binary
-    ping
-    pong
-    close
-
 =head1 METHODS
 
 =head2 C<new>
@@ -368,7 +357,14 @@ The payload of the frame.
 
 =item C<type> => TYPE_STR (default: C<"text">)
 
-The type of the frame. See the L</ATTRIBUTES> above.
+The type of the frame. Accepted values are:
+
+    text
+    binary
+    ping
+    pong
+    close
+
 
 =item C<fin> => BOOL (default: C<1>)
 
