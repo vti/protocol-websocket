@@ -43,6 +43,7 @@ sub new {
     else {
         $self->{buffer} = $buffer;
     }
+    $self->opcode($TYPES{ defined($self->{type}) ? $self->{type} : "text" });
 
     $self->{version} ||= 'draft-ietf-hybi-17';
 
@@ -240,13 +241,7 @@ sub to_bytes {
 
     my $string = '';
 
-    my $opcode;
-    if (my $type = $self->{type}) {
-        $opcode = $TYPES{$type};
-    }
-    else {
-        $opcode = $self->opcode;
-    }
+    my $opcode = $self->opcode;
 
     $string .= pack 'C', ($opcode + ($self->fin ? 128 : 0));
 
