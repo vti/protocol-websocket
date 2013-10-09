@@ -11,11 +11,12 @@ use constant MAX_RAND_INT => 2 ** 32;
 use constant MATH_RANDOM_SECURE => eval "require Math::Random::Secure;";
 
 our %TYPES = (
-    text   => 0x01,
-    binary => 0x02,
-    ping   => 0x09,
-    pong   => 0x0a,
-    close  => 0x08
+    continuation => 0x00,
+    text         => 0x01,
+    binary       => 0x02,
+    ping         => 0x09,
+    pong         => 0x0a,
+    close        => 0x08
 );
 
 sub new {
@@ -83,7 +84,9 @@ sub fin    {   @_ > 1                ? $_[0]->{fin} = $_[1]
              : defined($_[0]->{fin}) ? $_[0]->{fin}
                                      : 1 }
 sub rsv    { @_ > 1 ? $_[0]->{rsv}    = $_[1] : $_[0]->{rsv} }
-sub opcode { @_ > 1 ? $_[0]->{opcode} = $_[1] : $_[0]->{opcode} || 1 }
+sub opcode {   @_ > 1                   ? $_[0]->{opcode} = $_[1]
+             : defined($_[0]->{opcode}) ? $_[0]->{opcode}
+                                        : 1}
 sub masked { @_ > 1 ? $_[0]->{masked} = $_[1] : $_[0]->{masked} }
 
 sub is_ping   { $_[0]->opcode == 9 }
@@ -242,7 +245,7 @@ sub to_bytes {
         $opcode = $TYPES{$type};
     }
     else {
-        $opcode = $self->opcode || 1;
+        $opcode = $self->opcode;
     }
 
     $string .= pack 'C', ($opcode + ($self->fin ? 128 : 0));
@@ -359,6 +362,7 @@ The payload of the frame.
 
 The type of the frame. Accepted values are:
 
+    continuation
     text
     binary
     ping
