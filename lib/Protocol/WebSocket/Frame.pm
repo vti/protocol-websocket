@@ -90,11 +90,12 @@ sub opcode {   @_ > 1                   ? $_[0]->{opcode} = $_[1]
                                         : 1}
 sub masked { @_ > 1 ? $_[0]->{masked} = $_[1] : $_[0]->{masked} }
 
-sub is_ping   { $_[0]->opcode == 9 }
-sub is_pong   { $_[0]->opcode == 10 }
-sub is_close  { $_[0]->opcode == 8 }
-sub is_text   { $_[0]->opcode == 1 }
-sub is_binary { $_[0]->opcode == 2 }
+sub is_ping         { $_[0]->opcode == 9 }
+sub is_pong         { $_[0]->opcode == 10 }
+sub is_close        { $_[0]->opcode == 8 }
+sub is_continuation { $_[0]->opcode == 0 }
+sub is_text         { $_[0]->opcode == 1 }
+sub is_binary       { $_[0]->opcode == 2 }
 
 sub next_bytes {
     my $self = shift;
@@ -370,6 +371,10 @@ The type of the frame. Accepted values are:
 "fin" flag of the frame. "fin" flag must be 1 in the ending frame of fragments.
 
 =back
+
+=head2 C<is_continuation>
+
+Check if frame is of continuation type.
 
 =head2 C<is_text>
 

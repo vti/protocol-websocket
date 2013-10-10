@@ -5,7 +5,7 @@ use warnings;
 
 use utf8;
 
-use Test::More tests => 72;
+use Test::More tests => 83;
 
 use Encode;
 
@@ -151,7 +151,7 @@ is $f->to_bytes => pack('H*', "800548656c6c6f");
 
 # new(type => $type) and is_{type} method should be consistent
 {
-    my @types = qw(text binary ping pong close);
+    my @types = qw(continuation text binary ping pong close);
     foreach my $type (@types) {
         my $f = Protocol::WebSocket::Frame->new(type => $type);
         foreach my $test_type (@types) {
