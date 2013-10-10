@@ -372,9 +372,13 @@ The type of the frame. Accepted values are:
 
 The opcode of the frame. If C<type> field is set to a valid string, this field is ignored.
 
-=item C<fin> => BOOL (default: C<1>)
+=item C<fin> => BOOL (default: 1)
 
 "fin" flag of the frame. "fin" flag must be 1 in the ending frame of fragments.
+
+=item C<masked> => BOOL (default: 0)
+
+If set to true, the frame will be masked.
 
 =back
 

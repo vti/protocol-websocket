@@ -5,7 +5,7 @@ use warnings;
 
 use utf8;
 
-use Test::More tests => 88;
+use Test::More tests => 91;
 
 use Encode;
 
@@ -173,5 +173,19 @@ is $f->to_bytes => pack('H*', "880548656c6c6f");
 $f = Protocol::WebSocket::Frame->new(buffer => "Hello",
                                      type => "ping", opcode => 2);
 is $f->opcode => 9, "If both type and opcode are specified in new(), type wins.";
-is $f->to_bytes => pack('H*', "890548656c6c6f")
+is $f->to_bytes => pack('H*', "890548656c6c6f");
+
+# masked without explicit mask
+{
+    $f = Protocol::WebSocket::Frame->new(buffer => "Foobar", opcode => 9, masked => 1);
+    my $frame_bytestring = $f->to_bytes;
+    my @frame_bytes = unpack("C*", $frame_bytestring);
+    ok $frame_bytes[1] & 0x80, "MASK bit is set";
+    
+    my $p = Protocol::WebSocket::Frame->new();
+    $p->append($frame_bytestring);
+    my $message = $p->next_bytes;
+    is $message => "Foobar";
+    is $p->opcode => 9;
+}
 
