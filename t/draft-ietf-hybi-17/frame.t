@@ -5,7 +5,7 @@ use warnings;
 
 use utf8;
 
-use Test::More tests => 83;
+use Test::More tests => 93;
 
 use Encode;
 
@@ -164,3 +164,24 @@ is $f->to_bytes => pack('H*', "800548656c6c6f");
         }
     }
 }
+
+# opcode accessor
+$f = Protocol::WebSocket::Frame->new("Hello");
+is $f->opcode => 1;
+is $f->to_bytes => pack('H*', "810548656c6c6f");
+$f->opcode(2);
+is $f->opcode => 2;
+is $f->to_bytes => pack('H*', "820548656c6c6f");
+$f->opcode(0);
+is $f->opcode => 0;
+is $f->to_bytes => pack('H*', "800548656c6c6f");
+
+# opcode initializer
+$f = Protocol::WebSocket::Frame->new(buffer => "Hello", opcode => 8);
+is $f->opcode => 8;
+is $f->to_bytes => pack('H*', "880548656c6c6f");
+$f = Protocol::WebSocket::Frame->new(buffer => "Hello",
+                                     type => "ping", opcode => 2);
+is $f->opcode => 9, "If both type and opcode are specified in new(), type wins.";
+is $f->to_bytes => pack('H*', "890548656c6c6f")
+

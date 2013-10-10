@@ -43,7 +43,10 @@ sub new {
     else {
         $self->{buffer} = $buffer;
     }
-    $self->opcode($TYPES{ defined($self->{type}) ? $self->{type} : "text" });
+    if(defined($self->{type}) && defined($TYPES{$self->{type}})) {
+        $self->opcode($TYPES{$self->{type}});
+    }
+    
 
     $self->{version} ||= 'draft-ietf-hybi-17';
 
@@ -365,6 +368,9 @@ The type of the frame. Accepted values are:
     pong
     close
 
+=item C<opcode> => INT (default: 1)
+
+The opcode of the frame. If C<type> field is set to a valid string, this field is ignored.
 
 =item C<fin> => BOOL (default: C<1>)
 
@@ -402,6 +408,13 @@ Check if frame is of close type.
     $frame->fin(0);
 
 Get/set "fin" flag.
+
+=head2 C<opcode>
+
+    $opcode = $frame->opcode;
+    $frame->opcode(8);
+
+Get/set opcode of the frame.
 
 =head2 C<append>
 
