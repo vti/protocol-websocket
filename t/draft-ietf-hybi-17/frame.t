@@ -5,7 +5,7 @@ use warnings;
 
 use utf8;
 
-use Test::More tests => 93;
+use Test::More tests => 88;
 
 use Encode;
 
@@ -134,16 +134,6 @@ ok $@;
 # initialize fin flag to zero
 $f = Protocol::WebSocket::Frame->new(buffer => 'Hello', fin => 0);
 is $f->to_bytes => pack('H*', "010548656c6c6f");
-
-# get/set fin flag
-$f = Protocol::WebSocket::Frame->new(buffer => 'Hello');
-ok $f->fin;
-$f->fin(0);
-ok !$f->fin;
-is $f->to_bytes => pack('H*', "010548656c6c6f");
-$f->fin(1);
-ok $f->fin;
-is $f->to_bytes => pack('H*', "810548656c6c6f");
 
 # continuation frame
 $f = Protocol::WebSocket::Frame->new(buffer => "Hello", type => "continuation");

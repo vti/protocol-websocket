@@ -402,13 +402,6 @@ Check if frame is a pong response.
 
 Check if frame is of close type.
 
-=head2 C<fin>
-
-    $fin = $frame->fin;
-    $frame->fin(0);
-
-Get/set "fin" flag.
-
 =head2 C<opcode>
 
     $opcode = $frame->opcode;
