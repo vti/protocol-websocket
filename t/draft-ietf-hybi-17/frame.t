@@ -5,7 +5,7 @@ use warnings;
 
 use utf8;
 
-use Test::More tests => 91;
+use Test::More tests => 92;
 
 use Encode;
 
@@ -188,4 +188,13 @@ is $f->to_bytes => pack('H*', "890548656c6c6f");
     is $message => "Foobar";
     is $p->opcode => 9;
 }
+
+# destructive append
+{
+    $f = Protocol::WebSocket::Frame->new();
+    my $chunk = pack('H*', "810548656c6c6f");
+    $f->append($chunk);
+    is $chunk => "", "append() is destructive";
+}
+
 
