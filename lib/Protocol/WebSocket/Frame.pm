@@ -419,9 +419,12 @@ Get/set opcode of the frame.
 
 =head2 C<append>
 
-    $frame->append(...);
+    $frame->append($chunk);
 
 Append a frame chunk.
+
+Beware that this method is B<destructive>.
+It makes C<$chunk> empty unless C<$chunk> is read-only.
 
 =head2 C<next>
 
