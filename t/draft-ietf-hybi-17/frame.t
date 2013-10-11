@@ -5,7 +5,7 @@ use warnings;
 
 use utf8;
 
-use Test::More tests => 96;
+use Test::More;
 
 use Encode;
 
@@ -141,70 +141,104 @@ is $f->to_bytes => pack('H*', "800548656c6c6f");
 
 # generate fragmented frames
 $f = Protocol::WebSocket::Frame->new();
-$f->append(Protocol::WebSocket::Frame->new(buffer => "Hello", type => "binary", fin => 0)->to_bytes);
+$f->append(
+    Protocol::WebSocket::Frame->new(
+        buffer => "Hello",
+        type   => "binary",
+        fin    => 0
+    )->to_bytes
+);
 is $f->next_bytes => undef;
-$f->append(Protocol::WebSocket::Frame->new(buffer => ", ", type => "continuation", fin => 0)->to_bytes);
+$f->append(
+    Protocol::WebSocket::Frame->new(
+        buffer => ", ",
+        type   => "continuation",
+        fin    => 0
+    )->to_bytes
+);
 is $f->next_bytes => undef;
-$f->append(Protocol::WebSocket::Frame->new(buffer => "World!", type => "continuation", fin => 1)->to_bytes);
+$f->append(
+    Protocol::WebSocket::Frame->new(
+        buffer => "World!",
+        type   => "continuation",
+        fin    => 1
+    )->to_bytes
+);
 is $f->next_bytes => "Hello, World!";
-is $f->opcode => 2;
+is $f->opcode     => 2;
 
-# new(type => $type) and is_{type} method should be consistent
-{
+subtest 'constructor type values and is_$type are consistent' => sub {
     my @types = qw(continuation text binary ping pong close);
     foreach my $type (@types) {
         my $f = Protocol::WebSocket::Frame->new(type => $type);
         foreach my $test_type (@types) {
             my $method = "is_$test_type";
-            if($type eq $test_type) {
+            if ($type eq $test_type) {
                 ok $f->$method, "type $type $method";
-            }else {
+            }
+            else {
                 ok !$f->$method, "type $type not $method";
             }
         }
     }
-}
+};
 
-# opcode accessor
-$f = Protocol::WebSocket::Frame->new("Hello");
-is $f->opcode => 1;
-is $f->to_bytes => pack('H*', "810548656c6c6f");
-$f->opcode(2);
-is $f->opcode => 2;
-is $f->to_bytes => pack('H*', "820548656c6c6f");
-$f->opcode(0);
-is $f->opcode => 0;
-is $f->to_bytes => pack('H*', "800548656c6c6f");
+subtest 'opcode accessor/mutator' => sub {
+    my $f = Protocol::WebSocket::Frame->new("Hello");
+    is $f->opcode => 1;
+    is $f->to_bytes => pack('H*', "810548656c6c6f");
 
-# opcode initializer
-$f = Protocol::WebSocket::Frame->new(buffer => "Hello", opcode => 8);
-is $f->opcode => 8;
-is $f->to_bytes => pack('H*', "880548656c6c6f");
-$f = Protocol::WebSocket::Frame->new(buffer => "Hello",
-                                     type => "ping", opcode => 2);
-is $f->opcode => 9, "If both type and opcode are specified in new(), type wins.";
-is $f->to_bytes => pack('H*', "890548656c6c6f");
+    $f->opcode(2);
+    is $f->opcode => 2;
+    is $f->to_bytes => pack('H*', "820548656c6c6f");
 
-# masked without explicit mask
-{
-    $f = Protocol::WebSocket::Frame->new(buffer => "Foobar", opcode => 9, masked => 1);
+    $f->opcode(0);
+    is $f->opcode => 0;
+    is $f->to_bytes => pack('H*', "800548656c6c6f");
+};
+
+subtest 'opcode immediately available' => sub {
+    my $f = Protocol::WebSocket::Frame->new(buffer => "Hello", opcode => 8);
+
+    is $f->opcode => 8;
+    is $f->to_bytes => pack('H*', "880548656c6c6f");
+};
+
+subtest 'if both type and opcode are specified in new(), type wins' => sub {
+    my $f = Protocol::WebSocket::Frame->new(
+        buffer => "Hello",
+        type   => "ping",
+        opcode => 2
+    );
+
+    is $f->opcode => 9;
+    is $f->to_bytes => pack('H*', "890548656c6c6f");
+};
+
+subtest 'mask frame' => sub {
+    my $f = Protocol::WebSocket::Frame->new(
+        buffer => "Foobar",
+        opcode => 9,
+        masked => 1
+    );
     my $frame_bytestring = $f->to_bytes;
     my @frame_bytes = unpack("C*", $frame_bytestring);
     ok $frame_bytes[1] & 0x80, "MASK bit is set";
-    
+
     my $p = Protocol::WebSocket::Frame->new();
     $p->append($frame_bytestring);
     my $message = $p->next_bytes;
-    is $message => "Foobar";
+    is $message   => "Foobar";
     is $p->opcode => 9;
-}
+};
 
-# destructive append
-{
-    $f = Protocol::WebSocket::Frame->new();
+subtest 'append is destructive' => sub {
+    my $f = Protocol::WebSocket::Frame->new();
+
     my $chunk = pack('H*', "810548656c6c6f");
     $f->append($chunk);
+
     is $chunk => "", "append() is destructive";
-}
+};
 
-
+done_testing;

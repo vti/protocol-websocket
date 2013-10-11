@@ -7,7 +7,7 @@ use Config;
 use Encode ();
 use Scalar::Util 'readonly';
 
-use constant MAX_RAND_INT => 2 ** 32;
+use constant MAX_RAND_INT       => 2**32;
 use constant MATH_RANDOM_SECURE => eval "require Math::Random::Secure;";
 
 our %TYPES = (
@@ -43,10 +43,10 @@ sub new {
     else {
         $self->{buffer} = $buffer;
     }
-    if(defined($self->{type}) && defined($TYPES{$self->{type}})) {
+
+    if (defined($self->{type}) && defined($TYPES{$self->{type}})) {
         $self->opcode($TYPES{$self->{type}});
     }
-    
 
     $self->{version} ||= 'draft-ietf-hybi-17';
 
@@ -84,13 +84,20 @@ sub next {
     return Encode::decode('UTF-8', $bytes);
 }
 
-sub fin    {   @_ > 1                ? $_[0]->{fin} = $_[1]
-             : defined($_[0]->{fin}) ? $_[0]->{fin}
-                                     : 1 }
-sub rsv    { @_ > 1 ? $_[0]->{rsv}    = $_[1] : $_[0]->{rsv} }
-sub opcode {   @_ > 1                   ? $_[0]->{opcode} = $_[1]
-             : defined($_[0]->{opcode}) ? $_[0]->{opcode}
-                                        : 1}
+sub fin {
+    @_ > 1 ? $_[0]->{fin} =
+        $_[1]
+      : defined($_[0]->{fin}) ? $_[0]->{fin}
+      :                         1;
+}
+sub rsv { @_ > 1 ? $_[0]->{rsv} = $_[1] : $_[0]->{rsv} }
+
+sub opcode {
+    @_ > 1 ? $_[0]->{opcode} =
+        $_[1]
+      : defined($_[0]->{opcode}) ? $_[0]->{opcode}
+      :                            1;
+}
 sub masked { @_ > 1 ? $_[0]->{masked} = $_[1] : $_[0]->{masked} }
 
 sub is_ping         { $_[0]->opcode == 9 }
@@ -169,8 +176,9 @@ sub next_bytes {
 
         if ($payload_len > $self->{max_payload_size}) {
             $self->{buffer} = '';
-            die
-              "Payload is too big. Deny big message ($payload_len) or increase max_payload_size ($self->{max_payload_size})";
+            die "Payload is too big. "
+              . "Deny big message ($payload_len) "
+              . "or increase max_payload_size ($self->{max_payload_size})";
         }
 
         my $mask;
@@ -239,8 +247,8 @@ sub to_bytes {
     }
 
     if (length $self->{buffer} > $self->{max_payload_size}) {
-        die
-          "Payload is too big. Send shorter messages or increase max_payload_size";
+        die "Payload is too big. "
+          . "Send shorter messages or increase max_payload_size";
     }
 
     my $string = '';
@@ -291,12 +299,6 @@ sub to_string {
     my $self = shift;
 
     die 'DO NOT USE';
-
-    if (   $self->version eq 'draft-hixie-75'
-        || $self->version eq 'draft-ietf-hybi-00')
-    {
-        return "\x00" . Encode::decode('UTF-8', $self->{buffer}) . "\xff";
-    }
 }
 
 sub _mask {
@@ -342,7 +344,7 @@ L<Math::Random::Secure> is installed it is used instead.
 
 =head2 C<new>
 
-    Protocol::WebSocket::Frame->new('data');   ## same as (buffer => 'data')
+    Protocol::WebSocket::Frame->new('data');   # same as (buffer => 'data')
     Protocol::WebSocket::Frame->new(buffer => 'data', type => 'close');
 
 Create a new L<Protocol::WebSocket::Frame> instance. Automatically detect if the
