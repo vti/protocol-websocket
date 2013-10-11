@@ -5,7 +5,7 @@ use warnings;
 
 use utf8;
 
-use Test::More tests => 92;
+use Test::More tests => 96;
 
 use Encode;
 
@@ -138,6 +138,16 @@ is $f->to_bytes => pack('H*', "010548656c6c6f");
 # continuation frame
 $f = Protocol::WebSocket::Frame->new(buffer => "Hello", type => "continuation");
 is $f->to_bytes => pack('H*', "800548656c6c6f");
+
+# generate fragmented frames
+$f = Protocol::WebSocket::Frame->new();
+$f->append(Protocol::WebSocket::Frame->new(buffer => "Hello", type => "binary", fin => 0)->to_bytes);
+is $f->next_bytes => undef;
+$f->append(Protocol::WebSocket::Frame->new(buffer => ", ", type => "continuation", fin => 0)->to_bytes);
+is $f->next_bytes => undef;
+$f->append(Protocol::WebSocket::Frame->new(buffer => "World!", type => "continuation", fin => 1)->to_bytes);
+is $f->next_bytes => "Hello, World!";
+is $f->opcode => 2;
 
 # new(type => $type) and is_{type} method should be consistent
 {
