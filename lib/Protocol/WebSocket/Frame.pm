@@ -353,7 +353,7 @@ When called with more than one arguments, it takes the following named arguments
 
 =over
 
-=item C<buffer> => STR (default: "")
+=item C<buffer> => STR (default: C<"">)
 
 The payload of the frame.
 
@@ -379,6 +379,10 @@ The opcode of the frame. If C<type> field is set to a valid string, this field i
 =item C<masked> => BOOL (default: 0)
 
 If set to true, the frame will be masked.
+
+=item C<version> => VERSION_STR (default: C<'draft-ietf-hybi-17'>)
+
+WebSocket protocol version string. See L<Protocol::WebSocket> for valid version strings.
 
 =back
 
