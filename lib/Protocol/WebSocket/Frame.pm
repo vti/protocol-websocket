@@ -11,11 +11,12 @@ use constant MAX_RAND_INT => 2 ** 32;
 use constant MATH_RANDOM_SECURE => eval "require Math::Random::Secure;";
 
 our %TYPES = (
-    text   => 0x01,
-    binary => 0x02,
-    ping   => 0x09,
-    pong   => 0x0a,
-    close  => 0x08
+    continuation => 0x00,
+    text         => 0x01,
+    binary       => 0x02,
+    ping         => 0x09,
+    pong         => 0x0a,
+    close        => 0x08
 );
 
 sub new {
@@ -42,6 +43,10 @@ sub new {
     else {
         $self->{buffer} = $buffer;
     }
+    if(defined($self->{type}) && defined($TYPES{$self->{type}})) {
+        $self->opcode($TYPES{$self->{type}});
+    }
+    
 
     $self->{version} ||= 'draft-ietf-hybi-17';
 
@@ -79,16 +84,21 @@ sub next {
     return Encode::decode('UTF-8', $bytes);
 }
 
-sub fin    { @_ > 1 ? $_[0]->{fin}    = $_[1] : $_[0]->{fin} }
+sub fin    {   @_ > 1                ? $_[0]->{fin} = $_[1]
+             : defined($_[0]->{fin}) ? $_[0]->{fin}
+                                     : 1 }
 sub rsv    { @_ > 1 ? $_[0]->{rsv}    = $_[1] : $_[0]->{rsv} }
-sub opcode { @_ > 1 ? $_[0]->{opcode} = $_[1] : $_[0]->{opcode} || 1 }
+sub opcode {   @_ > 1                   ? $_[0]->{opcode} = $_[1]
+             : defined($_[0]->{opcode}) ? $_[0]->{opcode}
+                                        : 1}
 sub masked { @_ > 1 ? $_[0]->{masked} = $_[1] : $_[0]->{masked} }
 
-sub is_ping   { $_[0]->opcode == 9 }
-sub is_pong   { $_[0]->opcode == 10 }
-sub is_close  { $_[0]->opcode == 8 }
-sub is_text   { $_[0]->opcode == 1 }
-sub is_binary { $_[0]->opcode == 2 }
+sub is_ping         { $_[0]->opcode == 9 }
+sub is_pong         { $_[0]->opcode == 10 }
+sub is_close        { $_[0]->opcode == 8 }
+sub is_continuation { $_[0]->opcode == 0 }
+sub is_text         { $_[0]->opcode == 1 }
+sub is_binary       { $_[0]->opcode == 2 }
 
 sub next_bytes {
     my $self = shift;
@@ -235,15 +245,9 @@ sub to_bytes {
 
     my $string = '';
 
-    my $opcode;
-    if (my $type = $self->{type}) {
-        $opcode = $TYPES{$type};
-    }
-    else {
-        $opcode = $self->opcode || 1;
-    }
+    my $opcode = $self->opcode;
 
-    $string .= pack 'C', ($opcode + 128);
+    $string .= pack 'C', ($opcode + ($self->fin ? 128 : 0));
 
     my $payload_len = length($self->{buffer});
     if ($payload_len <= 125) {
@@ -334,26 +338,57 @@ Construct or parse a WebSocket frame.
 By default built-in C<rand> is used, this is not secure, so when
 L<Math::Random::Secure> is installed it is used instead.
 
-=head1 ATTRIBUTES
+=head1 METHODS
 
-=head2 C<type>
+=head2 C<new>
 
-Frame's type. C<text> by default. Other accepted values:
+    Protocol::WebSocket::Frame->new('data');   ## same as (buffer => 'data')
+    Protocol::WebSocket::Frame->new(buffer => 'data', type => 'close');
 
+Create a new L<Protocol::WebSocket::Frame> instance. Automatically detect if the
+passed data is a Perl string or bytes.
+
+When called with more than one arguments, it takes the following named arguments
+(all of them are optional).
+
+=over
+
+=item C<buffer> => STR (default: C<"">)
+
+The payload of the frame.
+
+=item C<type> => TYPE_STR (default: C<"text">)
+
+The type of the frame. Accepted values are:
+
+    continuation
+    text
     binary
     ping
     pong
     close
 
-=head1 METHODS
+=item C<opcode> => INT (default: 1)
 
-=head2 C<new>
+The opcode of the frame. If C<type> field is set to a valid string, this field is ignored.
 
-    Protocol::WebSocket::Frame->new('data');
-    Protocol::WebSocket::Frame->new(buffer => 'data', type => 'close');
+=item C<fin> => BOOL (default: 1)
 
-Create a new L<Protocol::WebSocket::Frame> instance. Automatically detect if the
-passed data is a Perl string or bytes.
+"fin" flag of the frame. "fin" flag must be 1 in the ending frame of fragments.
+
+=item C<masked> => BOOL (default: 0)
+
+If set to true, the frame will be masked.
+
+=item C<version> => VERSION_STR (default: C<'draft-ietf-hybi-17'>)
+
+WebSocket protocol version string. See L<Protocol::WebSocket> for valid version strings.
+
+=back
+
+=head2 C<is_continuation>
+
+Check if frame is of continuation type.
 
 =head2 C<is_text>
 
@@ -375,11 +410,21 @@ Check if frame is a pong response.
 
 Check if frame is of close type.
 
+=head2 C<opcode>
+
+    $opcode = $frame->opcode;
+    $frame->opcode(8);
+
+Get/set opcode of the frame.
+
 =head2 C<append>
 
-    $frame->append(...);
+    $frame->append($chunk);
 
 Append a frame chunk.
+
+Beware that this method is B<destructive>.
+It makes C<$chunk> empty unless C<$chunk> is read-only.
 
 =head2 C<next>
 
