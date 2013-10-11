@@ -4,6 +4,34 @@ Revision history for perl module Protocol::WebSocket
 
  - Implemented set cookies for requests (Joao Orui)
 
+ The following changes made by Toshio Ito (debug-ito):
+ - Add test in which Frame class generates and parses a series of fragments.
+ - Add test for destructiveness of append() method.
+ - Documentation: add remarks about destructiveness of append() method.
+   Sometimes it's useful, the other times it's confusing.
+ - Add documentation of "version" field in new() method.
+ - Add documentation of "masked" field in new() method.
+ - Remove fin() accessor from documentation and test. If a message is
+   fragmented, the return value of fin() is meaningless anyway. Plus, probably
+   current implementation does not handle fin flags if control frames are
+   injected in non-control fragments. If we want fin() accessor, the test for
+   that case is necessary.
+ - Add documentation about "opcode" field in new() method and opcode() accessor
+   method. tests are also added.
+ - Add is_continuation() method.
+ - Now "type" field for new() is immediately resolved to opcode, so that
+   new(type => $type) and is_{type} methods are now consistent. This fixes
+   github issue vti/protocol-websocket#19 ($frame->{type} field is preserved for
+   backward-compatibility, but direct assignment $frame->{type} = "close"
+   followed by $frame->to_bytes() will not work anymore. However, direct
+   assignment is considered rude anyway...)
+ - Add "continuation" frame type. opcode() method is revised so that it can
+   correctly return 0 if $frame->{opcode} == 0.
+ - POD update: ATTRIBUTES - type section is moved under new() method. This is
+   way more straightforward.
+ - Document "fin" field in the constructor and fin() accessor. to_bytes() now
+   encodes "fin" bit according to the fin field of the Frame object.
+
 0.12
 
  - Improved frame performance (Chuck Bredestege)
