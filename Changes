@@ -1,6 +1,6 @@
 Revision history for perl module Protocol::WebSocket
 
-0.13
+{{$NEXT}}
 
  - Implemented set cookies for requests (Joao Orui)
 
