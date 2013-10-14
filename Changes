@@ -3,6 +3,7 @@ Revision history for perl module Protocol::WebSocket
 {{$NEXT}}
 
  - Fix Changes file (Neil Bowers)
+ - Fix distribution (reported by Géraud CONTINSOUZAS)
 
 0.13 2013-10-13T17:17:03Z
 
