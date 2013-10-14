@@ -3,7 +3,7 @@ package Protocol::WebSocket;
 use strict;
 use warnings;
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 use Protocol::WebSocket::Frame;
 use Protocol::WebSocket::Handshake::Client;
@@ -117,6 +117,8 @@ Matthew Lien (BlueT)
 Joao Orui
 
 Toshio Ito (debug-ito)
+
+Neil Bowers
 
 =head1 AUTHOR
 
