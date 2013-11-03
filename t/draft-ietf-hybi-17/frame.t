@@ -216,20 +216,28 @@ subtest 'if both type and opcode are specified in new(), type wins' => sub {
 };
 
 subtest 'mask frame' => sub {
-    my $f = Protocol::WebSocket::Frame->new(
-        buffer => "Foobar",
-        opcode => 9,
-        masked => 1
-    );
-    my $frame_bytestring = $f->to_bytes;
-    my @frame_bytes = unpack("C*", $frame_bytestring);
-    ok $frame_bytes[1] & 0x80, "MASK bit is set";
-
-    my $p = Protocol::WebSocket::Frame->new();
-    $p->append($frame_bytestring);
-    my $message = $p->next_bytes;
-    is $message   => "Foobar";
-    is $p->opcode => 9;
+    foreach my $test_case (
+        {label => "foobar", opcode => 9, buffer => "Foobar"},
+        {label => "empty", opcode => 1, buffer => ""},
+        {label => "character zero", opcode => 2, buffer => "0"},
+        {label => "number zero", opcode => 2, buffer => 0},
+        {label => "number 123", opcode => 1, buffer => 123},
+    ) {
+        my $f = Protocol::WebSocket::Frame->new(
+            buffer => $test_case->{buffer},
+            opcode => $test_case->{opcode},
+            masked => 1
+        );
+        my $frame_bytestring = $f->to_bytes;
+        my @frame_bytes = unpack("C*", $frame_bytestring);
+        ok $frame_bytes[1] & 0x80, "$test_case->{label}: MASK bit is set";
+            
+        my $p = Protocol::WebSocket::Frame->new();
+        $p->append($frame_bytestring);
+        my $message = $p->next_bytes;
+        is $message   => $test_case->{buffer}, "$test_case->{label}: parse buffer OK";
+        is $p->opcode => $test_case->{opcode}, "$test_case->{label}: parse opcode OK";
+    }
 };
 
 subtest 'append is destructive' => sub {
