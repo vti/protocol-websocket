@@ -307,7 +307,7 @@ sub _mask {
 
     $mask = $mask x (int(length($payload) / 4) + 1);
     $mask = substr($mask, 0, length($payload));
-    $payload ^= $mask;
+    $payload = "$payload" ^ $mask;
 
     return $payload;
 }
