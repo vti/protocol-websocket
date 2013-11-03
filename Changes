@@ -2,6 +2,10 @@ Revision history for perl module Protocol::WebSocket
 
 {{$NEXT}}
 
+0.15 2013-11-03T15:54:47Z
+
+ - Explicitly stringify $payload in _mask() method (Toshio Ito)
+
 0.14 2013-10-14T08:50:38Z
 
  - Fix Changes file (Neil Bowers)
