@@ -16,10 +16,12 @@ sub new {
     my $self = {};
     bless $self, $class;
 
+    Carp::croak('url is required') unless $params{url};
     $self->{url} = Protocol::WebSocket::URL->new->parse($params{url})
       or Carp::croak("Can't parse url");
 
-    $self->{version}  = $params{version};
+    $self->{version} = $params{version};
+
     $self->{on_write} = $params{on_write};
     $self->{on_frame} = $params{on_frame};
     $self->{on_eof}   = $params{on_eof};
@@ -96,6 +98,10 @@ sub connect {
 sub disconnect {
     my $self = shift;
 
+    my $frame = $self->_build_frame(type => 'close');
+
+    $self->{on_write}->($self, $frame->to_bytes);
+
     return $self;
 }
 
@@ -106,3 +112,48 @@ sub _build_frame {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+Protocol::WebSocket::Client - WebSocket client
+
+=head1 SYNOPSIS
+
+    my $sock = ...get non-blocking socket...;
+
+    my $client = Protocol::WebSocket->new(url => 'ws://localhost:3000');
+    $client->on(
+        write => sub {
+            my $client = shift;
+            my ($buf) = @_;
+
+            syswrite $sock, $buf;
+        }
+    );
+    $client->on(
+        read => sub {
+            my $client = shift;
+            my ($buf) = @_;
+
+            ...do smth with read data...
+        }
+    );
+
+    # Sends a correct handshake header
+    $client->connect;
+
+    $client->write('hi there');
+
+    # Parses incoming data and on every frame calls on_read
+    $client->read(...data from socket...);
+
+    # Sends correct close header
+    $client->disconnect;
+
+=head1 DESCRIPTION
+
+L<Protocol::WebSocket::Client> is a convenient class for writing a WebSocket
+client.
+
+=cut

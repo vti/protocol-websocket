@@ -9,7 +9,7 @@ use Devel::Hexdump ();
 use AnyEvent;
 use AnyEvent::Socket;
 use AnyEvent::Handle;
-use Protocol::WebSocket;
+use Protocol::WebSocket::Client;
 
 $|++;
 
@@ -26,26 +26,18 @@ my $cv = AnyEvent->condvar;
 my ($url, $version) = @ARGV;
 die "Usage: $0 <url> <version>" unless $url;
 
-my $ws_url = Protocol::WebSocket::URL->new->parse($url)
-  or die "Can't parse url";
-$version ||= 'draft-ietf-hybi-17';
-
-my ($ws_handle, $frame);
+my $client = Protocol::WebSocket::Client->new(url => $url, version => $version);
+my $ws_handle;
 
 debug("! Using version '$version'");
 
-debug("! Connecting to '" . $ws_url->host . ':' . $ws_url->port . "'");
-my ($host, $port) = ($ws_url->host, $ws_url->port);
+debug(
+    "! Connecting to '" . $client->url->host . ':' . $client->url->port . "'");
+my ($host, $port) = ($client->url->host, $client->url->port);
 tcp_connect $host, $port, sub {
     my ($fh) = @_ or return $cv->send("Connect failed: $!");
 
     debug("! Connected");
-
-    my $hs = Protocol::WebSocket::Handshake::Client->new(
-        version => $version,
-        url     => $ws_url
-    );
-    $frame = Protocol::WebSocket::Frame->new(version => $version);
 
     $ws_handle = AnyEvent::Handle->new(
         fh     => $fh,
@@ -62,26 +54,32 @@ tcp_connect $host, $port, sub {
 
             my $buf = delete $handle->{rbuf};
 
-            if ($hs->is_done) {
-                debug("< Reading frame");
-                debug_hex($buf);
-                $frame->append($buf);
+            debug("< Reading");
+            debug_hex($buf);
 
-                while (my $bytes = $frame->next_bytes) {
-                    print $bytes;
-                }
-            }
-            else {
-                debug("< Reading handshake");
-                debug($buf);
-                $hs->parse($buf) or return $cv->send('Handshake failed: ' . $hs->error);
-            }
+            $client->read($buf);
         }
     );
 
-    debug("> Writing handshake");
-    debug($hs->to_string);
-    $ws_handle->push_write($hs->to_string);
+    $client->on(
+        write => sub {
+            my $client = shift;
+            my ($buf) = @_;
+
+            debug("> Writing");
+            debug_hex($buf);
+
+            $ws_handle->push_write($buf);
+        }
+    );
+    $client->on(
+        read => sub {
+            my $self = shift;
+            my ($buf) = @_;
+
+        }
+    );
+    $client->connect;
 };
 
 my $stdin = AnyEvent::Handle->new(
@@ -91,15 +89,14 @@ my $stdin = AnyEvent::Handle->new(
 
         my $buf = delete $handle->{rbuf};
 
-        my $frame = Protocol::WebSocket::Frame->new(
-            masked => 1,
-            version => $version,
-            buffer  => $buf
-        );
-        debug("> Writing frame");
-        debug_hex($frame->to_bytes);
-        $ws_handle->push_write($frame->to_bytes);
+        $client->write($buf);
+    },
+    on_eof => sub {
+        $client->disconnect;
+
+        $ws_handle->destroy;
+        $cv->send;
     }
 );
 
-warn $cv->wait;
+$cv->wait;
