@@ -12,8 +12,11 @@ sub parse {
 
     my $cookies = [];
 
-    my $pair = shift @{$self->pairs};
-    my $version = $pair->[1];
+    my $version = 1;
+    if ($self->pairs->[0] eq '$Version') {
+        my $pair = shift @{$self->pairs};
+        $version = $pair->[1];
+    }
 
     my $cookie;
     foreach my $pair (@{$self->pairs}) {
