@@ -3,7 +3,7 @@ package Protocol::WebSocket;
 use strict;
 use warnings;
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 use Protocol::WebSocket::Frame;
 use Protocol::WebSocket::Handshake::Client;
@@ -12,6 +12,8 @@ use Protocol::WebSocket::URL;
 
 1;
 __END__
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -120,13 +122,17 @@ Toshio Ito (debug-ito)
 
 Neil Bowers
 
+Michal Špaček
+
+Graham Ollis
+
 =head1 AUTHOR
 
 Viacheslav Tykhanovskyi, C<vti@cpan.org>.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2010-2013, Viacheslav Tykhanovskyi.
+Copyright (C) 2010-2014, Viacheslav Tykhanovskyi.
 
 This program is free software, you can redistribute it and/or modify it under
 the same terms as Perl 5.10.

@@ -2,6 +2,9 @@ Revision history for perl module Protocol::WebSocket
 
 {{$NEXT}}
 
+ - perl 5.8 unpack fix (Graham Ollis)
+ - doc and test fixes (Michal Špaček)
+
 0.16 2014-01-07T20:33:59Z
 
  - just meta files update
