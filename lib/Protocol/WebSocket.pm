@@ -69,27 +69,39 @@ attribute to an appropriate value.
 L<Protocol::WebSocket> itself does not contain any code and cannot be used
 directly. Instead the following modules should be used:
 
-=head2 L<Protocol::WebSocket::Handshake::Server>
+=head2 High-level modules
+
+=head3 L<Protocol::WebSocket::Server>
+
+Server helper class.
+
+=head3 L<Protocol::WebSocket::Client>
+
+Client helper class.
+
+=head2 Low-level modules
+
+=head3 L<Protocol::WebSocket::Handshake::Server>
 
 Server handshake parser and constructor.
 
-=head2 L<Protocol::WebSocket::Handshake::Client>
+=head3 L<Protocol::WebSocket::Handshake::Client>
 
 Client handshake parser and constructor.
 
-=head2 L<Protocol::WebSocket::Frame>
+=head3 L<Protocol::WebSocket::Frame>
 
 WebSocket frame parser and constructor.
 
-=head2 L<Protocol::WebSocket::Request>
+=head3 L<Protocol::WebSocket::Request>
 
 Low level WebSocket request parser and constructor.
 
-=head2 L<Protocol::WebSocket::Response>
+=head3 L<Protocol::WebSocket::Response>
 
 Low level WebSocket response parser and constructor.
 
-=head2 L<Protocol::WebSocket::URL>
+=head3 L<Protocol::WebSocket::URL>
 
 Low level WebSocket url parser and constructor.
 
