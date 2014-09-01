@@ -22,6 +22,7 @@ sub new {
 
     $self->{version} = $params{version};
 
+    $self->{on_connect} = $params{on_connect};
     $self->{on_write} = $params{on_write};
     $self->{on_frame} = $params{on_frame};
     $self->{on_eof}   = $params{on_eof};
@@ -34,7 +35,8 @@ sub new {
     return $self;
 }
 
-sub url { shift->{url} }
+sub url     { shift->{url} }
+sub version { shift->{version} }
 
 sub on {
     my $self = shift;
@@ -57,6 +59,8 @@ sub read {
             $self->{on_error}->($self, $hs->error);
             return $self;
         }
+
+        $self->{on_connect}->($self) if $self->{on_connect} && $hs->is_done;
     }
 
     if ($hs->is_done) {
@@ -143,7 +147,12 @@ Protocol::WebSocket::Client - WebSocket client
     # Sends a correct handshake header
     $client->connect;
 
-    $client->write('hi there');
+    # Register on connect handler
+    $client->on(
+        connect => sub {
+            $client->write('hi there');
+        }
+    );
 
     # Parses incoming data and on every frame calls on_read
     $client->read(...data from socket...);

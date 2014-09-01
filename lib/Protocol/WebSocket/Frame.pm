@@ -163,7 +163,7 @@ sub next_bytes {
             $bits =~ s{^.}{0};
 
             # Can we handle 64bit numbers?
-            if ($Config{ivsize} <= 4 || $Config{longsize} < 8) {
+            if ($Config{ivsize} <= 4 || $Config{longsize} < 8 || $] < 5.010) {
                 $bits = substr($bits, 32);
                 $payload_len = unpack 'N', pack 'B*', $bits;
             }
