@@ -7,7 +7,7 @@ use base 'Protocol::WebSocket::Message';
 
 require Carp;
 use MIME::Base64 ();
-use Digest::SHA1 ();
+use Digest::SHA ();
 
 use Protocol::WebSocket::URL;
 use Protocol::WebSocket::Cookie::Response;
@@ -91,7 +91,7 @@ sub headers {
 
         my $key = $self->key;
         $key .= '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'; # WTF
-        $key = Digest::SHA1::sha1($key);
+        $key = Digest::SHA::sha1($key);
         $key = MIME::Base64::encode_base64($key);
         $key =~ s{\s+}{}g;
 
