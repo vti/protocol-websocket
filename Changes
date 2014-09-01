@@ -2,6 +2,10 @@ Revision history for perl module Protocol::WebSocket
 
 {{$NEXT}}
 
+0.18 2014-09-01T14:45:16Z
+
+ - Digest::SHA1 -> Digest::SHA (Michal Špaček)
+
 0.17 2014-04-09T08:12:01Z
 
  - perl 5.8 unpack fix (Graham Ollis)
