@@ -348,7 +348,7 @@ L<Math::Random::Secure> is installed it is used instead.
     Protocol::WebSocket::Frame->new(buffer => 'data', type => 'close');
 
 Create a new L<Protocol::WebSocket::Frame> instance. Automatically detect if the
-passed data is a Perl string or bytes.
+passed data is a Perl string (UTF-8 flag) or bytes.
 
 When called with more than one arguments, it takes the following named arguments
 (all of them are optional).
@@ -434,14 +434,14 @@ It makes C<$chunk> empty unless C<$chunk> is read-only.
 
     $frame->next; # next message
 
-Return the next message as a Perl string.
+Return the next message as a Perl string (UTF-8 decoded).
 
 =head2 C<next_bytes>
 
-Return the next message as a UTF-8 encoded string.
+Return the next message as is.
 
 =head2 C<to_bytes>
 
-Construct a WebSocket message as a UTF-8 encoded string.
+Construct a WebSocket message.
 
 =cut
