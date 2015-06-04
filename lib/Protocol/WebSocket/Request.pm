@@ -10,6 +10,15 @@ use MIME::Base64 ();
 
 use Protocol::WebSocket::Cookie::Request;
 
+sub new {
+    my $self = shift->SUPER::new(@_);
+    my (%params) = @_;
+
+    $self->{headers} = $params{headers} || [];
+
+    return $self;
+}
+
 sub new_from_psgi {
     my $class = shift;
     my $env = @_ > 1 ? {@_} : shift;
@@ -184,6 +193,13 @@ sub to_string {
     }
     else {
         Carp::croak('Version ' . $self->version . ' is not supported');
+    }
+
+    while (my ($key, $value) = splice @{$self->{headers}}, 0, 2) {
+        $key =~ s{[\x0d\x0a]}{}gsm;
+        $value =~ s{[\x0d\x0a]}{}gsm;
+
+        $string .= "$key: $value\x0d\x0a";
     }
 
     $string .= "\x0d\x0a";

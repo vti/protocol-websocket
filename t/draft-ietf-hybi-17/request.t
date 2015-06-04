@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 57;
+use Test::More;
 
 use_ok 'Protocol::WebSocket::Request';
 
@@ -93,3 +93,24 @@ is $req->to_string => "GET /chat HTTP/1.1\x0d\x0a"
   . "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\x0d\x0a"
   . "Sec-WebSocket-Version: 13\x0d\x0a"
   . "\x0d\x0a";
+
+subtest 'add custom headers' => sub {
+    my $req = Protocol::WebSocket::Request->new(
+        host   => 'server.example.com',
+        origin => 'http://example.com',
+        resource_name => '/chat',
+        key           => 'dGhlIHNhbXBsZSBub25jZQ==',
+        headers => ['X-Foo' => 'bar']
+    );
+    is $req->to_string => "GET /chat HTTP/1.1\x0d\x0a"
+      . "Upgrade: WebSocket\x0d\x0a"
+      . "Connection: Upgrade\x0d\x0a"
+      . "Host: server.example.com\x0d\x0a"
+      . "Origin: http://example.com\x0d\x0a"
+      . "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\x0d\x0a"
+      . "Sec-WebSocket-Version: 13\x0d\x0a"
+      . "X-Foo: bar\x0d\x0a"
+      . "\x0d\x0a";
+};
+
+done_testing;
