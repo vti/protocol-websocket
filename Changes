@@ -2,6 +2,11 @@ Revision history for perl module Protocol::WebSocket
 
 {{$NEXT}}
 
+0.19 2015-09-28T16:55:01Z
+
+ - custom headers in request
+ - fix wrong UTF-8 related documentation (#GH-13)
+
 0.18 2014-09-01T14:45:16Z
 
  - Digest::SHA1 -> Digest::SHA (Michal Špaček)
