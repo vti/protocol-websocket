@@ -44,10 +44,7 @@ Makefile
 Makefile.old
 MANIFEST.bak
 META.yml
+META.json
 MYMETA.yml
 nytprof.out
 pm_to_blib
-
-Build.PL
-META.json
-README.md
