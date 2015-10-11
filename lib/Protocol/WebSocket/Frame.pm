@@ -236,6 +236,12 @@ sub next_bytes {
 sub to_bytes {
     my $self = shift;
 
+    my $rBuffer = \($self->{buffer});
+    if( $self->is_close and defined $self->{code} ){
+        $rBuffer = \( pack('n',$self->{code}). $self->{buffer} );
+    }
+
+
     if (   $self->version eq 'draft-hixie-75'
         || $self->version eq 'draft-ietf-hybi-00')
     {
@@ -243,10 +249,10 @@ sub to_bytes {
             return "\xff\x00";
         }
 
-        return "\x00" . $self->{buffer} . "\xff";
+        return "\x00" . $$rBuffer . "\xff";
     }
 
-    if (length $self->{buffer} > $self->{max_payload_size}) {
+    if (length $$rBuffer > $self->{max_payload_size}) {
         die "Payload is too big. "
           . "Send shorter messages or increase max_payload_size";
     }
@@ -257,7 +263,7 @@ sub to_bytes {
 
     $string .= pack 'C', ($opcode + ($self->fin ? 128 : 0));
 
-    my $payload_len = length($self->{buffer});
+    my $payload_len = length($$rBuffer);
     if ($payload_len <= 125) {
         $payload_len |= 0b10000000 if $self->masked;
         $string .= pack 'C', $payload_len;
@@ -286,10 +292,10 @@ sub to_bytes {
         $mask = pack 'N', $mask;
 
         $string .= $mask;
-        $string .= $self->_mask($self->{buffer}, $mask);
+        $string .= $self->_mask($$rBuffer, $mask);
     }
     else {
-        $string .= $self->{buffer};
+        $string .= $$rBuffer;
     }
 
     return $string;
@@ -385,6 +391,12 @@ If set to true, the frame will be masked.
 =item C<version> => VERSION_STR (default: C<'draft-ietf-hybi-17'>)
 
 WebSocket protocol version string. See L<Protocol::WebSocket> for valid version strings.
+
+=item C<code> => 2-byte unsigned integer (default: none)
+
+the status code of close frame.
+if this arguments is set, encoded status code will ed insertted at the head of buffer.
+please check RFC6455 section 5.5.1 for more detail. http://tools.ietf.org/html/rfc6455#section-5.5.1
 
 =back
 
