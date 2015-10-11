@@ -30,7 +30,13 @@ sub new {
 
     $self->{hs} =
       Protocol::WebSocket::Handshake::Client->new(url => $self->{url});
-    $self->{frame_buffer} = $self->_build_frame;
+
+    my %frame_buffer_params = (
+        max_fragments_amount => $params{max_fragments_amount},
+        max_payload_size     => $params{max_payload_size}
+    );
+
+    $self->{frame_buffer} = $self->_build_frame(%frame_buffer_params);
 
     return $self;
 }
