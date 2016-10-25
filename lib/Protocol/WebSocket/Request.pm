@@ -194,8 +194,8 @@ sub to_string {
     else {
         Carp::croak('Version ' . $self->version . ' is not supported');
     }
-
-    while (my ($key, $value) = splice @{$self->{headers}}, 0, 2) {
+    my @headers = @{$self->{headers}};
+    while (my ($key, $value) = splice @headers, 0, 2) {
         $key =~ s{[\x0d\x0a]}{}gsm;
         $value =~ s{[\x0d\x0a]}{}gsm;
 
