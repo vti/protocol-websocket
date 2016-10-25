@@ -9,6 +9,7 @@ TestApp
 t/sessions/
 tags
 MYMETA.yml
+MYMETA.json
 
 
 # From: https://github.com/github/gitignore/blob/master/Global/Linux.gitignore
