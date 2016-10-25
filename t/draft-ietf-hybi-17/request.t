@@ -111,6 +111,16 @@ subtest 'add custom headers' => sub {
       . "Sec-WebSocket-Version: 13\x0d\x0a"
       . "X-Foo: bar\x0d\x0a"
       . "\x0d\x0a";
+
+    is $req->to_string => "GET /chat HTTP/1.1\x0d\x0a"
+      . "Upgrade: WebSocket\x0d\x0a"
+      . "Connection: Upgrade\x0d\x0a"
+      . "Host: server.example.com\x0d\x0a"
+      . "Origin: http://example.com\x0d\x0a"
+      . "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\x0d\x0a"
+      . "Sec-WebSocket-Version: 13\x0d\x0a"
+      . "X-Foo: bar\x0d\x0a"
+      . "\x0d\x0a";
 };
 
 done_testing;
