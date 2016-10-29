@@ -251,11 +251,17 @@ sub to_bytes {
           . "Send shorter messages or increase max_payload_size";
     }
 
+
+    my $rsv_set = 0;
+    if($self->{rsv} && ref($self->{rsv}) eq 'ARRAY') {
+    	for my $i (0..@{$self->{rsv}}-1) { 
+    		$rsv_set += $self->{rsv}->[$i] * (1 << (6 - $i));
+    	}
+    }
+    
     my $string = '';
-
     my $opcode = $self->opcode;
-
-    $string .= pack 'C', ($opcode + ($self->fin ? 128 : 0));
+    $string .= pack 'C', ($opcode | $rsv_set | ($self->fin ? 128 : 0));
 
     my $payload_len = length($self->{buffer});
     if ($payload_len <= 125) {
