@@ -138,6 +138,8 @@ Michal Špaček
 
 Graham Ollis
 
+Anton Petrusevich
+
 =head1 AUTHOR
 
 Viacheslav Tykhanovskyi, C<vti@cpan.org>.
