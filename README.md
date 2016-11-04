@@ -121,6 +121,8 @@ Michal Špaček
 
 Graham Ollis
 
+Anton Petrusevich
+
 # AUTHOR
 
 Viacheslav Tykhanovskyi, `vti@cpan.org`.
