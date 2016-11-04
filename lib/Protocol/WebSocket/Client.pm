@@ -32,9 +32,9 @@ sub new {
       Protocol::WebSocket::Handshake::Client->new(url => $self->{url});
 
     my %frame_buffer_params = (
-        max_fragments_amount => $params{max_fragments_amount},
-        max_payload_size     => $params{max_payload_size}
+        max_fragments_amount => $params{max_fragments_amount}
     );
+    $frame_buffer_params{max_payload_size} = $params{max_payload_size} if exists $params{max_payload_size};
 
     $self->{frame_buffer} = $self->_build_frame(%frame_buffer_params);
 
