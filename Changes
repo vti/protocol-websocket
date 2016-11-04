@@ -4,6 +4,7 @@ Revision history for perl module Protocol::WebSocket
 
  - RSV bit (Anton Petrusevich)
  - do not modify passed headers structure (Graham Ollis)
+ - bypass max payload size (Graham Ollis)
 
 0.19 2015-09-28T16:55:01Z
 
