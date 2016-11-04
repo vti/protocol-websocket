@@ -53,7 +53,7 @@ sub new {
     $self->{fragments} = [];
 
     $self->{max_fragments_amount} ||= 128;
-    $self->{max_payload_size}     ||= 65536;
+    $self->{max_payload_size}     ||= 65536 unless exists $self->{max_payload_size};
 
     return $self;
 }
@@ -174,7 +174,7 @@ sub next_bytes {
             $offset += 8;
         }
 
-        if ($payload_len > $self->{max_payload_size}) {
+        if ($self->{max_payload_size} && $payload_len > $self->{max_payload_size}) {
             $self->{buffer} = '';
             die "Payload is too big. "
               . "Deny big message ($payload_len) "
@@ -246,7 +246,7 @@ sub to_bytes {
         return "\x00" . $self->{buffer} . "\xff";
     }
 
-    if (length $self->{buffer} > $self->{max_payload_size}) {
+    if ($self->{max_payload_size} && length $self->{buffer} > $self->{max_payload_size}) {
         die "Payload is too big. "
           . "Send shorter messages or increase max_payload_size";
     }
@@ -316,6 +316,12 @@ sub _mask {
     $payload = "$payload" ^ $mask;
 
     return $payload;
+}
+
+sub max_payload_size {
+    my $self = shift;
+    
+    $self->{max_payload_size};
 }
 
 1;
@@ -449,5 +455,10 @@ Return the next message as is.
 =head2 C<to_bytes>
 
 Construct a WebSocket message.
+
+=head2 C<max_payload_size>
+
+The maximum size of the payload.  You may set this to C<0> or C<undef> to disable checking
+the payload size.
 
 =cut
