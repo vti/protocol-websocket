@@ -6,6 +6,8 @@ use warnings;
 use Protocol::WebSocket::Request;
 use Protocol::WebSocket::Response;
 
+our $req_max_message_size = 20480;
+
 sub new {
     my $class = shift;
     $class = ref $class if ref $class;
@@ -20,7 +22,7 @@ sub error { @_ > 1 ? $_[0]->{error} = $_[1] : $_[0]->{error} }
 
 sub version { $_[0]->req->version }
 
-sub req { shift->{req} ||= Protocol::WebSocket::Request->new }
+sub req { shift->{req} ||= Protocol::WebSocket::Request->new(max_message_size => $req_max_message_size) }
 sub res { shift->{res} ||= Protocol::WebSocket::Response->new }
 
 1;
@@ -48,6 +50,13 @@ Set or get handshake error.
     $handshake->version;
 
 Set or get handshake version.
+
+=head1 CONSTANTS
+
+=head2 C<$req_max_message_size>
+
+Defaults to 20480 (20 kiB). Can be modified if you need to handle a handshake
+on a websocket connexion with really large HTTP headers.
 
 =head1 METHODS
 
