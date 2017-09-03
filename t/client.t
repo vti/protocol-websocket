@@ -82,12 +82,10 @@ subtest 'call on_write on write' => sub {
 };
 
 subtest 'max_payload_size passed to frame buffer' => sub {
-
     is(Protocol::WebSocket::Client->new(url => 'ws://localhost:8080')->{frame_buffer}->max_payload_size, 65536, "default");
     is(Protocol::WebSocket::Client->new(url => 'ws://localhost:8080', max_payload_size => 22)->{frame_buffer}->max_payload_size, 22, "set to 22");
     is(Protocol::WebSocket::Client->new(url => 'ws://localhost:8080', max_payload_size => 0)->{frame_buffer}->max_payload_size, 0, "set to 0");
     is(Protocol::WebSocket::Client->new(url => 'ws://localhost:8080', max_payload_size => undef)->{frame_buffer}->max_payload_size, undef, "set to undef");
-
 };
 
 sub _recv_server_handshake {
