@@ -23,6 +23,8 @@ ok $req->parse("Origin: http://example.com\x0d\x0a");
 ok not defined $req->parse("\x0d\x0a");
 ok $req->is_state('error');
 
+local $Protocol::WebSocket::Message::MAX_MESSAGE_SIZE = 1024;
+
 $req = Protocol::WebSocket::Request->new;
 ok not defined $req->parse('x' x (1024 * 10));
 ok $req->is_state('error');

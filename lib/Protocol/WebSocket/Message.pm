@@ -8,6 +8,8 @@ use base 'Protocol::WebSocket::Stateful';
 use Scalar::Util qw(readonly);
 require Digest::MD5;
 
+our $MAX_MESSAGE_SIZE = 10 * 2048;
+
 sub new {
     my $class = shift;
     $class = ref $class if ref $class;
@@ -21,7 +23,7 @@ sub new {
 
     $self->{fields} ||= {};
 
-    $self->{max_message_size} ||= 2048;
+    $self->{max_message_size} ||= $MAX_MESSAGE_SIZE;
 
     $self->{cookies} ||= [];
 
