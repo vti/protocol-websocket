@@ -2,6 +2,11 @@ Revision history for perl module Protocol::WebSocket
 
 {{$NEXT}}
 
+0.21 2017-09-04T17:06:56Z
+
+ - MAX_PAYLOAD_SIZE global var
+ - MAX_MESSAGE_SIZE global var
+
 0.20 2016-11-04T18:21:37Z
 
  - RSV bit (Anton Petrusevich)

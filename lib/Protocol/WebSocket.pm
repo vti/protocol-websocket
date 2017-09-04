@@ -3,7 +3,7 @@ package Protocol::WebSocket;
 use strict;
 use warnings;
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 use Protocol::WebSocket::Frame;
 use Protocol::WebSocket::Handshake::Client;
