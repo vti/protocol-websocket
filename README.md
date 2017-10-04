@@ -2,6 +2,8 @@
 
 Protocol::WebSocket - WebSocket protocol
 
+[![Kritika Analysis Status](https://kritika.io/users/vti/repos/3688390935874643/heads/master/status.svg)](https://kritika.io/users/vti/repos/3688390935874643/heads/master/)
+
 # SYNOPSIS
 
     # Server side
