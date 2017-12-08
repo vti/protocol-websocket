@@ -433,6 +433,13 @@ Check if frame is of close type.
 
 Get/set opcode of the frame.
 
+=head2 C<masked>
+
+    $masked = $frame->masked;
+    $frame->masked(1);
+
+Get/set masking of the frame.
+
 =head2 C<append>
 
     $frame->append($chunk);
