@@ -2,8 +2,6 @@
 
 Protocol::WebSocket - WebSocket protocol
 
-[![Kritika Analysis Status](https://kritika.io/users/vti/repos/3688390935874643/heads/master/status.svg)](https://kritika.io/users/vti/repos/3688390935874643/heads/master/)
-
 # SYNOPSIS
 
     # Server side
@@ -131,7 +129,7 @@ Viacheslav Tykhanovskyi, `vti@cpan.org`.
 
 # COPYRIGHT
 
-Copyright (C) 2010-2014, Viacheslav Tykhanovskyi.
+Copyright (C) 2010-2017, Viacheslav Tykhanovskyi.
 
 This program is free software, you can redistribute it and/or modify it under
 the same terms as Perl 5.10.
