@@ -2,6 +2,9 @@ Revision history for perl module Protocol::WebSocket
 
 {{$NEXT}}
 
+ - reliable UTF-8 bahaviour (Paul "LeoNerd" Evans #GH-35, #GH-52)
+ - document masked frame attribute
+
 0.21 2017-09-04T17:06:56Z
 
  - MAX_PAYLOAD_SIZE global var
