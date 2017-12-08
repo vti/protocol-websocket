@@ -39,15 +39,15 @@ sub new {
 
     $buffer = '' unless defined $buffer;
 
+    if (defined($self->{type}) && defined($TYPES{$self->{type}})) {
+        $self->opcode($TYPES{$self->{type}});
+    }
+
     if (Encode::is_utf8($buffer)) {
         $self->{buffer} = Encode::encode('UTF-8', $buffer);
     }
     else {
         $self->{buffer} = $buffer;
-    }
-
-    if (defined($self->{type}) && defined($TYPES{$self->{type}})) {
-        $self->opcode($TYPES{$self->{type}});
     }
 
     $self->{version} ||= 'draft-ietf-hybi-17';
