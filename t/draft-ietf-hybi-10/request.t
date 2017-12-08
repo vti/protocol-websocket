@@ -10,7 +10,6 @@ use IO::Handle;
 use_ok 'Protocol::WebSocket::Request';
 
 my $req;
-my $message;
 
 $req = Protocol::WebSocket::Request->new;
 
