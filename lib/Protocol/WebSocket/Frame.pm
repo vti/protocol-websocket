@@ -43,12 +43,9 @@ sub new {
         $self->opcode($TYPES{$self->{type}});
     }
 
-    if (Encode::is_utf8($buffer)) {
-        $self->{buffer} = Encode::encode('UTF-8', $buffer);
-    }
-    else {
-        $self->{buffer} = $buffer;
-    }
+    $self->{buffer} = $self->is_text ?
+        Encode::encode('UTF-8', $buffer) :
+        $buffer;
 
     $self->{version} ||= 'draft-ietf-hybi-17';
 
@@ -361,8 +358,10 @@ L<Math::Random::Secure> is installed it is used instead.
     Protocol::WebSocket::Frame->new('data');   # same as (buffer => 'data')
     Protocol::WebSocket::Frame->new(buffer => 'data', type => 'close');
 
-Create a new L<Protocol::WebSocket::Frame> instance. Automatically detect if the
-passed data is a Perl string (UTF-8 flag) or bytes.
+Create a new L<Protocol::WebSocket::Frame> instance. When creating a C<text>
+frame (the default behaviour if C<type> is not specified) the string data is
+encoded into UTF-8 bytes; for other frame types it is assumed to already be in
+bytes.
 
 When called with more than one arguments, it takes the following named arguments
 (all of them are optional).
