@@ -2,6 +2,10 @@ Revision history for perl module Protocol::WebSocket
 
 {{$NEXT}}
 
+0.23 2017-12-12T19:16:32Z
+
+ - revert previous release
+
 0.22 2017-12-08T17:24:15Z
 
  - reliable UTF-8 bahaviour (Paul "LeoNerd" Evans #GH-35, #GH-52)
