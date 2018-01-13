@@ -64,7 +64,7 @@ sub new_from_psgi {
         $fields->{'sec-websocket-key2'} = $env->{HTTP_SEC_WEBSOCKET_KEY2};
     }
 
-    if ($version eq 'draft-ietf-hybi-10' || $version eq 'draft-ietf-hybi-17') {
+    if ($version eq 'draft-ietf-hybi-10') {
         $fields->{'sec-websocket-origin'} = $env->{HTTP_SEC_WEBSOCKET_ORIGIN};
     }
     else {
