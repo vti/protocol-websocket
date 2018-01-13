@@ -123,13 +123,15 @@ Graham Ollis
 
 Anton Petrusevich
 
+Eric Wastl
+
 # AUTHOR
 
 Viacheslav Tykhanovskyi, `vti@cpan.org`.
 
 # COPYRIGHT
 
-Copyright (C) 2010-2017, Viacheslav Tykhanovskyi.
+Copyright (C) 2010-2018, Viacheslav Tykhanovskyi.
 
 This program is free software, you can redistribute it and/or modify it under
 the same terms as Perl 5.10.
