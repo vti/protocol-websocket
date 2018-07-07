@@ -147,7 +147,7 @@ sub _parse_first_line {
 
     my $status = $self->status;
     unless ($line =~ m{^HTTP/1\.1 $status }) {
-        $self->error('Wrong response line');
+        $self->error('Wrong response line. Got [[' . $line . "]], expected [[HTTP/1.1 $status ]]");
         return;
     }
 

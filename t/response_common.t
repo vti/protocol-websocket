@@ -12,7 +12,7 @@ my $res;
 $res = Protocol::WebSocket::Response->new;
 $res->parse("foo\x0d\x0a");
 ok $res->is_state('error');
-is $res->error => 'Wrong response line';
+is $res->error => 'Wrong response line. Got [[foo]], expected [[HTTP/1.1 101 ]]';
 
 local $Protocol::WebSocket::Message::MAX_MESSAGE_SIZE = 1024;
 
