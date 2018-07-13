@@ -150,7 +150,7 @@ sub _parse_first_line {
         my $vis = $line;
         if( length( $vis ) > 80 ) {
             substr( $vis, 77 )= '...';
-        };
+        }
         $self->error('Wrong response line. Got [[' . $vis . "]], expected [[HTTP/1.1 $status ]]");
         return;
     }
