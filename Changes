@@ -2,6 +2,8 @@ Revision history for perl module Protocol::WebSocket
 
 {{$NEXT}}
 
+ - The "Wrong response line" error now includes the actual response line
+
 0.24 2018-01-13T09:59:07Z
 
  -  draft-ietf-hybi-17 uses origin header, not sec-websocket-origin (Eric Wastl)
