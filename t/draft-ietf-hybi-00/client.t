@@ -71,4 +71,5 @@ ok !$h->error;
 
 $h = Protocol::WebSocket::Handshake::Client->new;
 ok !$h->parse("HTTP/1.0 foo bar\x0d\x0a");
-is $h->error => 'Wrong response line';
+is $h->error => 'Wrong response line. Got [[HTTP/1.0 foo bar]], '
+  . 'expected [[HTTP/1.1 101 ]]';
