@@ -78,4 +78,19 @@ subtest 'turn off payload size checking (next_bytes)' => sub {
     is $@, '';
 };
 
+my $first_fragment = Protocol::WebSocket::Frame->new(buffer => 'x', type => 'text', fin => 0);
+my $a_fragment = Protocol::WebSocket::Frame->new(buffer => 'x', type => 'continuation', fin => 0);
+
+subtest 'maximum number or fragments exceeded' => sub {
+    local $Protocol::WebSocket::Frame::MAX_FRAGMENTS_AMOUNT = 42;
+    my $frame = Protocol::WebSocket::Frame->new();
+    is $frame->{max_fragments_amount}, 42;
+
+    $frame->append($first_fragment->to_bytes);
+    $frame->append($a_fragment->to_bytes) for ( 1 .. $frame->{max_fragments_amount} );
+
+    eval { $frame->next_bytes };
+    like $@, qr/Too many fragments/;
+};
+
 done_testing;
