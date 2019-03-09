@@ -46,7 +46,7 @@ or clients to provide WebSocket support.
     draft-hixie-75
 
 By default the latest version is used. The WebSocket version is detected
-automatically on the server side. On the client side you have set a `version`
+automatically on the server side. On the client side you have to set a `version`
 attribute to an appropriate value.
 
 [Protocol::WebSocket](https://metacpan.org/pod/Protocol::WebSocket) itself does not contain any code and cannot be used
@@ -125,13 +125,17 @@ Anton Petrusevich
 
 Eric Wastl
 
+Max Maischein (Corion)
+
+Daniel Kamil Kozar (xavery)
+
 # AUTHOR
 
 Viacheslav Tykhanovskyi, `vti@cpan.org`.
 
 # COPYRIGHT
 
-Copyright (C) 2010-2018, Viacheslav Tykhanovskyi.
+Copyright (C) 2010-2019, Viacheslav Tykhanovskyi.
 
 This program is free software, you can redistribute it and/or modify it under
 the same terms as Perl 5.10.
