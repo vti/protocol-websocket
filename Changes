@@ -2,6 +2,8 @@ Revision history for perl module Protocol::WebSocket
 
 {{$NEXT}}
 
+0.25 2019-03-09T09:31:45Z
+
  - The "Wrong response line" error now includes the actual response line
 
 0.24 2018-01-13T09:59:07Z
