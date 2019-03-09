@@ -11,6 +11,7 @@ use constant MAX_RAND_INT       => 2**32;
 use constant MATH_RANDOM_SECURE => eval "require Math::Random::Secure;";
 
 our $MAX_PAYLOAD_SIZE = 65536;
+our $MAX_FRAGMENTS_AMOUNT = 128;
 
 our %TYPES = (
     continuation => 0x00,
@@ -54,7 +55,7 @@ sub new {
 
     $self->{fragments} = [];
 
-    $self->{max_fragments_amount} ||= 128;
+    $self->{max_fragments_amount} ||= $MAX_FRAGMENTS_AMOUNT unless exists $self->{max_fragments_amount};
     $self->{max_payload_size}     ||= $MAX_PAYLOAD_SIZE unless exists $self->{max_payload_size};
 
     return $self;
