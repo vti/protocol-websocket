@@ -2,6 +2,8 @@ Revision history for perl module Protocol::WebSocket
 
 {{$NEXT}}
 
+0.26 2019-03-09T09:35:15Z
+
  - Introduce MAX_FRAGMENTS_AMOUNT to change the allowable amount of fragments (Daniel Kamil Kozar)
  - Update draft-ietf-hybi-00 tests to include the error text in response line (Daniel Kamil Kozar)
 
