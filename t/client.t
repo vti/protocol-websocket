@@ -62,12 +62,18 @@ subtest 'call on_read on new data' => sub {
 subtest 'write close frame on disconnect' => sub {
     my $client = Protocol::WebSocket::Client->new(url => 'ws://localhost:8080');
 
+    $client->on(write => sub { });
+
+    $client->connect;
+
+    _recv_server_handshake($client);
+
     my $written = '';
     $client->on(write => sub { $written .= $_[1] });
 
     $client->disconnect;
 
-    is $written, "\x88\x00";
+    like $written, qr/^\x88\x80/;
 };
 
 subtest 'call on_write on write' => sub {
@@ -75,6 +81,10 @@ subtest 'call on_write on write' => sub {
 
     my $written = '';
     $client->on(write => sub { $written .= $_[1] });
+
+    $client->connect;
+
+    _recv_server_handshake($client);
 
     $client->write('foobar');
 
