@@ -45,9 +45,12 @@ sub version { shift->{version} }
 
 sub on {
     my $self = shift;
-    my ($event, $cb) = @_;
+    my (%handlers) = @_;
 
-    $self->{"on_$event"} = $cb;
+    foreach my $event (keys %handlers)
+    {
+        $self->{"on_$event"} = $handlers{$event};
+    }
 
     return $self;
 }
