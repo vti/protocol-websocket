@@ -1,0 +1,86 @@
+{
+   "abstract" : "WebSocket protocol",
+   "author" : [
+      "Viacheslav Tykhanovskyi, C<vti@cpan.org>."
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Minilla/v3.1.3, CPAN::Meta::Converter version 2.150010",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "Protocol-WebSocket",
+   "no_index" : {
+      "directory" : [
+         "t",
+         "xt",
+         "inc",
+         "share",
+         "eg",
+         "examples",
+         "author",
+         "builder"
+      ]
+   },
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "Module::Build::Tiny" : "0.035"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "Test::CPAN::Meta" : "0",
+            "Test::MinimumVersion::Fast" : "0.04",
+            "Test::PAUSE::Permissions" : "0.04",
+            "Test::Pod" : "1.41",
+            "Test::Spellunker" : "v0.2.7"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Carp" : "0",
+            "Digest::MD5" : "0",
+            "Digest::SHA" : "0",
+            "Scalar::Util" : "0"
+         }
+      }
+   },
+   "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/vti/protocol-websocket/issues"
+      },
+      "homepage" : "https://github.com/vti/protocol-websocket",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/vti/protocol-websocket.git",
+         "web" : "https://github.com/vti/protocol-websocket"
+      }
+   },
+   "version" : "0.26",
+   "x_contributors" : [
+      "Anton Petrusevich <anton.petrusevich@lycos.com>",
+      "BlueT - Matthew Lien - 練喆明 <BlueT@BlueT.org>",
+      "Chia-liang Kao <clkao@clkao.org>",
+      "Daniel Kamil Kozar <dkk089@gmail.com>",
+      "Eric Wastl <topaz.github@lt3.us>",
+      "Graham Ollis <plicease@cpan.org>",
+      "Greg Kennedy <kennedy.greg@gmail.com>",
+      "Joao Orui <joao@joao.jp>",
+      "Jon Gentle <atrodo@atrodo.org>",
+      "Jonathan Barber <jonathan.barber@gmail.com>",
+      "Lee Aylward <lee@laylward.com>",
+      "Max Maischein <corion@corion.net>",
+      "Michal Špaček <tupinek@gmail.com>",
+      "Neil Bowers <neil@bowers.com>",
+      "Paul \"LeoNerd\" Evans <leonerd@leonerd.org.uk>",
+      "Toshio Ito <debug.ito@gmail.com>",
+      "vti <viacheslav.t@gmail.com>"
+   ],
+   "x_serialization_backend" : "JSON::PP version 2.97001",
+   "x_static_install" : 1
+}

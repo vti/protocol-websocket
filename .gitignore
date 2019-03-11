@@ -1,51 +1,5 @@
-# Dancer Specific
-*.old
-*~
-example/logs
-t/*/logs
-t/*/sessions
-logs
-TestApp
-t/sessions/
-tags
-MYMETA.yml
-MYMETA.json
-
-
-# From: https://github.com/github/gitignore/blob/master/Global/Linux.gitignore
-.*
-!.gitignore
-*~
-*.sw[a-p]
-.directory
-
-
-# From: https://github.com/github/gitignore/blob/master/Global/Windows.gitignore
-Thumbs.db
-Desktop.ini
-
-
-# From https://github.com/github/gitignore/blob/master/Global/OSX.gitignore
-.DS_Store
-Icon?
-._*
-.Spotlight-V100
-.Trashes
-
-
-# From https://github.com/github/gitignore/blob/master/Perl.gitignore
-blib/
-_build/
-cover_db/
-inc/
+*.swp
+blib
 Build
-Build.bat
-.last_cover_stats
-Makefile
-Makefile.old
-MANIFEST.bak
-META.yml
-META.json
-MYMETA.yml
-nytprof.out
-pm_to_blib
+MANIFEST
+MYMETA.*
