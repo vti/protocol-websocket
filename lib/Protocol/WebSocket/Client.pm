@@ -22,8 +22,12 @@ sub new {
 
     $self->{version} = $params{version};
 
-    $self->{on_connect} = $params{on_connect};
+    # User callbacks.  Only write and read are mandatory.
     $self->{on_write} = $params{on_write};
+    $self->{on_read} = $params{on_read};
+
+    # Additional callbacks for other WS events
+    $self->{on_connect} = $params{on_connect};
     $self->{on_eof}   = $params{on_eof};
     $self->{on_error} = $params{on_error};
     $self->{on_pong} = $params{on_pong};
@@ -38,19 +42,28 @@ sub new {
     $self->{hs} =
       Protocol::WebSocket::Handshake::Client->new(url => $self->{url});
 
-    my %frame_buffer_params = (
-        max_fragments_amount => $params{max_fragments_amount}
-    );
+    # optional parameters for the frame buffer
+    my %frame_buffer_params;
+    $frame_buffer_params{max_fragments_amount} = $params{max_fragments_amount} if exists $params{max_fragments_amount};
     $frame_buffer_params{max_payload_size} = $params{max_payload_size} if exists $params{max_payload_size};
 
     $self->{frame_buffer} = $self->_build_frame(%frame_buffer_params);
 
+    # Flag indicating current state
+    #  0 = not connected yet,
+    #  1 = ready,
+    # -1 = connection closed.
+    $self->{state} = 0;
+
     return $self;
 }
 
+# function stubs around member vars
 sub url     { shift->{url} }
 sub version { shift->{version} }
+sub is_ready { shift->{state} > 0 }
 
+# register callbacks after construction
 sub on {
     my $self = shift;
     my (%handlers) = @_;
@@ -70,22 +83,29 @@ sub read {
     my $hs           = $self->{hs};
     my $frame_buffer = $self->{frame_buffer};
 
+    # handshake is always the beginning of the WS process
     unless ($hs->is_done) {
         if (!$hs->parse($buffer)) {
             $self->{on_error}->($self, $hs->error);
             return $self;
         }
 
-        $self->{on_connect}->($self) if $self->{on_connect} && $hs->is_done;
+        if ($hs->is_done) {
+            $self->{state} = 1;
+            $self->{on_connect}->($self) if $self->{on_connect};
+        }
     }
 
+    # handshake has been completed, this is user-mode now
     if ($hs->is_done) {
         $frame_buffer->append($buffer);
 
         while (defined (my $bytes = $frame_buffer->next)) {
             if ($frame_buffer->is_close) {
-                # Remote WebSocket close (TCP socket may be open for a bit)
-                $self->{on_eof}->($self, $bytes) if $self->{on_eof};
+                # Remote WebSocket close (TCP socket may stay open for a bit)
+                $self->disconnect if ($self->is_ready);
+                # TODO: see message in disconnect() about error code / reason
+                $self->{on_eof}->($self) if $self->{on_eof};
             } elsif ($frame_buffer->is_pong) {
                 # Server responded to our ping.
                 $self->{on_pong}->($self, $bytes) if $self->{on_pong};
@@ -109,54 +129,66 @@ sub write {
     my $self = shift;
     my ($buffer) = @_;
 
-    my $frame =
-      ref $buffer
-      ? $buffer
-      : $self->_build_frame(masked => 1, buffer => $buffer);
-    $self->{on_write}->($self, $frame->to_bytes);
+    if ($self->is_ready) {
+        my $frame =
+          ref $buffer
+          ? $buffer
+          : $self->_build_frame(masked => 1, buffer => $buffer);
+        $self->{on_write}->($self, $frame->to_bytes);
+    } else {
+        warn "Protocol::WebSocket::Client: write() on " . ($self->{state} ? 'closed' : 'unconnected') . " WebSocket.";
+    }
 
     return $self;
 }
 
 # Write preformatted messages
+# "connect" (initial handshake)
 sub connect {
     my $self = shift;
 
-    my $hs = $self->{hs};
+    if ($self->{state} == 0) {
+        my $hs = $self->{hs};
 
-    $self->{on_write}->($self, $hs->to_string);
+        $self->{on_write}->($self, $hs->to_string);
+    } else {
+        warn "Protocol::WebSocket::Client: connect() on " . ($self->{state} > 0 ? 'already-connected' : 'closed') . " WebSocket.";
+    }
 
     return $self;
 }
 
+# "disconnect" (close frame)
+#  also sets state to -1 when called
 sub disconnect {
     my $self = shift;
 
-    my $frame = $self->_build_frame(type => 'close');
+    # TODO: Spec states 'close' messages may contain a uint16 error code, and a utf-8 reason.
+    #  Clients are supposed to echo back the error code when receiving close from server.
+    # For now, we just send an empty message.
+    $self->write( $self->_build_frame(type => 'close', masked => 1) );
 
-    $self->{on_write}->($self, $frame->to_bytes);
+    $self->{state} = -1;
 
     return $self;
 }
 
+# "ping" (keep-alive, client to server)
 sub ping {
     my $self = shift;
     my ($buffer) = @_;
 
-    my $frame = $self->_build_frame(type => 'ping', masked => 1, buffer => $buffer);
-
-    $self->{on_write}->($self, $frame->to_bytes);
+    $self->write( $self->_build_frame(type => 'ping', masked => 1, buffer => $buffer) );
 
     return $self;
 }
 
+# "pong" (keep-alive, server to client)
 sub pong {
     my $self = shift;
     my ($buffer) = @_;
 
-    my $frame = $self->_build_frame(type => 'pong', masked => 1, buffer => $buffer);
-
-    $self->{on_write}->($self, $frame->to_bytes);
+    $self->write( $self->_build_frame(type => 'pong', masked => 1, buffer => $buffer) );
 
     return $self;
 }
