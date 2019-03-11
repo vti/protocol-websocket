@@ -26,6 +26,14 @@ sub new {
     $self->{on_write} = $params{on_write};
     $self->{on_eof}   = $params{on_eof};
     $self->{on_error} = $params{on_error};
+    $self->{on_pong} = $params{on_pong};
+
+    # register auto-pong by default
+    if (exists $params{on_ping}) {
+        $self->{on_ping} = $params{on_ping};
+    } else {
+        $self->{on_ping} = \&pong;
+    }
 
     $self->{hs} =
       Protocol::WebSocket::Handshake::Client->new(url => $self->{url});
@@ -76,7 +84,14 @@ sub read {
 
         while (defined (my $bytes = $frame_buffer->next)) {
             if ($frame_buffer->is_close) {
-                $self->{on_eof}->($self);
+                # Remote WebSocket close (TCP socket may be open for a bit)
+                $self->{on_eof}->($self, $bytes) if $self->{on_eof};
+            } elsif ($frame_buffer->is_pong) {
+                # Server responded to our ping.
+                $self->{on_pong}->($self, $bytes) if $self->{on_pong};
+            } elsif ($frame_buffer->is_ping) {
+                # Server sent ping request.
+                $self->{on_ping}->($self, $bytes) if $self->{on_ping};
             } else {
                 $self->{on_read}->($self, $bytes);
             }
@@ -86,6 +101,10 @@ sub read {
     return $self;
 }
 
+# Write arbitrary message.
+#  Takes either a Protocol::WebSocket::Frame object, or
+#  if given a scalar, builds a standard frame around it.
+# In either case, calls user on_write function.
 sub write {
     my $self = shift;
     my ($buffer) = @_;
@@ -99,6 +118,7 @@ sub write {
     return $self;
 }
 
+# Write preformatted messages
 sub connect {
     my $self = shift;
 
@@ -119,6 +139,29 @@ sub disconnect {
     return $self;
 }
 
+sub ping {
+    my $self = shift;
+    my ($buffer) = @_;
+
+    my $frame = $self->_build_frame(type => 'ping', masked => 1, buffer => $buffer);
+
+    $self->{on_write}->($self, $frame->to_bytes);
+
+    return $self;
+}
+
+sub pong {
+    my $self = shift;
+    my ($buffer) = @_;
+
+    my $frame = $self->_build_frame(type => 'pong', masked => 1, buffer => $buffer);
+
+    $self->{on_write}->($self, $frame->to_bytes);
+
+    return $self;
+}
+
+# Class-specific internal functions
 sub _build_frame {
     my $self = shift;
 
