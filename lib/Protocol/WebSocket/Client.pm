@@ -211,16 +211,14 @@ Protocol::WebSocket::Client - WebSocket client
 
     my $sock = ...get non-blocking socket...;
 
-    my $client = Protocol::WebSocket->new(url => 'ws://localhost:3000');
+    my $client = Protocol::WebSocket::Client->new(url => 'ws://localhost:3000');
     $client->on(
         write => sub {
             my $client = shift;
             my ($buf) = @_;
 
             syswrite $sock, $buf;
-        }
-    );
-    $client->on(
+        },
         read => sub {
             my $client = shift;
             my ($buf) = @_;
@@ -248,6 +246,264 @@ Protocol::WebSocket::Client - WebSocket client
 =head1 DESCRIPTION
 
 L<Protocol::WebSocket::Client> is a convenient class for writing a WebSocket
-client.
+client.  It can be used to create the proper handshake to initiate a WebSocket
+session with a client, as well as properly encode/decode WS frames from/to
+Perl strings.
 
-=cut
+This class does not implement its own TCP socket handling.  Instead, it
+provides callback hooks for the end user to plug in their own read / write
+routines.  The user should open a (non-)blocking socket with L<IO::Socket::INET>
+or similar, then call C<$client->on()> to attach custom code blocks to handlers
+in the object.  Later, when decoding packets, the class will call the
+appropriate callback so the application can use the data returned.
+
+=head2 Methods
+
+=over 12
+
+=item C<new>
+
+Returns a new Protocol::WebSocket::Client object.
+
+Parameters should be passed to C<new()> as hash pairs.  The only mandatory
+parameter is C<url>, which must be a valid WebSocket URL beginning with
+C<ws://> or C<wss://>.  However, if you don't specify C<on_read> and
+C<on_write> here, AND you don't provide them later using a call to C<on()>,
+the object will not actually be usable.
+
+The list of parameters follows:
+
+=over 12
+
+=item C<url>
+
+URL of the desired WebSocket server endpoint.  This parameter is mandatory,
+and is only used to construct the valid handshake for initiating a session.
+
+This URL is parsed by L<Protocol::WebSocket::URL>, refer to that object for
+documentation on allowed URL formatting.
+
+=item C<version>
+
+Desired version of the WebSocket protocol to use.  See L<Protocol::WebSocket>
+for a list of valid version strings, as well as the default used when this
+is not provided.
+
+=item C<on_write>, C<on_read>, C<on_connect>, C<on_eof>, C<on_error>, C<on_pong>, C<on_ping>
+
+Application callback for various WebSocket events.  See C<on()> for details.
+
+Note that C<on_ping> is a special case: if the user does not provide a value,
+a default "pong" function will be used automatically.  Users may disable the
+auto-pong handler by passing C<on_ping =E<gt> undef>, or supply their own.
+
+=item C<max_fragments_amount>, C<max_payload_size>
+
+These parameters are passed to the underlying WebSocket Frame object and control
+behavior of the frame decoding.  Refer to L<Protocol::WebSocket::Frame> for
+details on these options.
+
+=back
+
+=item C<on>
+
+Registers a callback with the object, which will be triggered at various points
+in the WebSocket control flow.  Mandatory callbacks are C<on_read> and
+C<on_write>: the client will (probably) crash if attempting to connect without
+supplying something here.
+
+Other handlers can be disabled by passing undef.
+
+C<on()> accepts a hash as input, so it is possible to set multiple handlers with
+one call.  Either call this by passing a function reference (as in
+C<on( read =E<gt> \&my_read );>) or an anonymous code block (as in
+C<on( connect =E<gt> { print "Connected!\n" } );>).
+
+The list of available hooks follows:
+
+=over 12
+
+=item C<write>
+
+Called when the Object wants to write data to the socket.  The function receives
+a reference to the object, and a buffer (string) to write.  For example:
+
+    write => sub {
+        my $client = shift;
+        my ($buf) = @_;
+
+        syswrite $sock, $buf;
+    }
+
+=item C<read>
+
+Called when the Object has finished parsing a Frame and has data to return
+to the application.  The function receives a reference to the object, and
+a buffer containing the received data.  For example:
+
+    read => sub {
+        my $client = shift;
+        my ($buf) = @_;
+
+        print "Received from remote: '$buf'\n";
+    }
+
+=item C<connect>
+
+Called when the Object has completed the handshake with the remote server.
+The callback receives a reference to the object.
+
+    connect => sub {
+        my $client = shift;
+
+        print "Client has finished handshake and is ready to talk!\n";
+    }
+
+=item C<eof>
+
+Called when the Object has terminated the WebSocket connection.  This can
+happen either at the request of the Server, or because the Client has called
+C<disconnect()>.  The callback function receives a reference to the object.
+
+A closed WebSocket connection cannot send or receive further packets, though
+the TCP socket remains open.  In practice, it's wise to close that here.
+
+    eof => sub {
+        my $client = shift;
+
+        print "WebSocket connection is terminated.\n";
+        $sock->close;
+    }
+
+=item C<error>
+
+Called when the Object fails to complete a handshake.  The callback function
+receives a reference to the object, and a buffer (string) containing any
+error info that might be useful.
+
+    error => sub {
+        my $client = shift;
+        my ($buf) = @_;
+
+        say "Error establishing WebSocket: $buf";
+        $sock->close;
+        exit;
+    }
+
+=item C<ping>
+
+Called when the Object decodes a "ping" request from the server.  A built-in
+handler for this is supplied by default, but users may wish to provide their
+own.  The callback function receives a reference to the object, and a buffer
+containing any data in the Ping message.  The WebSocket spec suggests that
+the buffer should simply be returned in the pong response.
+
+    ping => sub {
+        my $client = shift;
+        my ($buf) = @_;
+
+        say "Ping?  PONG!\n";
+        $client->pong($buf);
+    }
+
+=item C<pong>
+
+Called when the Object decodes a "pong" response from the server.  Because
+this can only be triggered by the application sending a "ping", it is probably
+safe to ignore this function.
+
+The callback function receives a reference to the object, and a buffer
+containing any data in the Pong message (which, in turn, should be a copy
+of the data sent in the initial Ping message).
+
+    pong => sub {
+        my $client = shift;
+        my ($buf) = @_;
+
+        say "Good news, everyone!  The server is alive.\n";
+    }
+
+=back
+
+=item C<write>
+
+Send data to the remote WebService.
+
+This function takes either a scalar (which will be packaged in correct
+WebSocket framing) or a reference to a L<Protocol::WebSocket::Frame> object
+(in case you need to build a frame yourself).  It then calls the user-provided
+C<on_write> method with the encoded data.
+
+This function tries to B<warn> when sending at a time that isn't valid (e.g.
+during the connection or after disconnect).  See C<is_ready()> to determine
+if now is an OK time to C<write()>.
+
+=item C<read>
+
+Decode data retrieved from the remote socket as WebSocket frames.
+
+This function accepts a scalar containing bytes that should be appended to
+the internal object buffer.  Because WebSockets is a Frame protocol atop a TCP
+stream, data may be retrieved piecemeal until an entire frame is collected.
+
+If no complete frame is ready after the call, this function will simply return.
+However, if a complete frame is ready and decoded, the object will send decoded
+data to the appropriate callback hook at this time.
+
+In other words, call C<sysread()>, and pass the resulting buffer to this
+function for parsing.
+
+=item C<connect>
+
+Initiate a WebSocket connection to the remote service.  This will send the
+handshake (using the C<on_write> callback).
+
+This function tries to B<warn> when connecting while a connection already
+exists, so don't do that.
+
+=item C<disconnect>
+
+Send a Close frame to the remote service, and mark the connection as Closed
+internally.  Assuming a well-behaved remote service, this should result in a
+callback to C<on_eof> fairly quickly.
+
+This function tries to B<warn> when closing an already-closed or not-yet-open
+connection, so don't do that either.
+
+=item C<ping>
+
+Send a Ping frame to the remote service.  Accepts a buffer of data to send
+with the message (e.g. a timestamp, monotonically increasing ID, etc).
+
+As with C<write()> above, this is only valid in an established connection.
+
+=item C<pong>
+
+Send a Pong frame to the remote service.  Accepts a buffer of data to send
+with the message - you should really just reply with whatever was in the
+original Ping frame.
+
+As with C<write()> above, this is only valid in an established connection.
+
+=item C<url>
+
+Returns / sets the L<Protocol::WebSocket::URL> associated with this object.
+
+=item C<version>
+
+Returns / sets the WebSocket protocol version being used by this object.
+
+=item C<is_ready>
+
+Returns 1 if the object is ready to accept C<write()> / C<ping()> / C<pong()>,
+0 otherwise.
+
+=back
+
+=head1 AUTHOR
+
+See L<Protocol::WebSocket> for author details.
+
+=head1 COPYRIGHT
+
+See L<Protocol::WebSocket> for copyright info.
