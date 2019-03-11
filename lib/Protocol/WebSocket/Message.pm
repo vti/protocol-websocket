@@ -42,7 +42,11 @@ sub field {
 
     return $self->fields->{$name} unless @_;
 
-    $self->fields->{$name} = $_[0];
+    if(defined $self->fields->{$name}) {
+        $self->fields->{$name} .= ',' . $_[0];
+    } else {
+        $self->fields->{$name} = $_[0];
+    }
 
     return $self;
 }
