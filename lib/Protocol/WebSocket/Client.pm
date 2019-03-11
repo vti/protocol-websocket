@@ -24,7 +24,6 @@ sub new {
 
     $self->{on_connect} = $params{on_connect};
     $self->{on_write} = $params{on_write};
-    $self->{on_frame} = $params{on_frame};
     $self->{on_eof}   = $params{on_eof};
     $self->{on_error} = $params{on_error};
 
@@ -72,10 +71,12 @@ sub read {
     if ($hs->is_done) {
         $frame_buffer->append($buffer);
 
-        while (my $bytes = $frame_buffer->next) {
-            $self->{on_read}->($self, $bytes);
-
-            #$self->{on_frame}->($self, $bytes);
+        while (defined (my $bytes = $frame_buffer->next)) {
+            if ($frame_buffer->is_close) {
+                $self->{on_eof}->($self);
+            } else {
+                $self->{on_read}->($self, $bytes);
+            }
         }
     }
 
