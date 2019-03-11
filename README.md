@@ -125,6 +125,8 @@ Anton Petrusevich
 
 Eric Wastl
 
+Greg Kennedy
+
 # AUTHOR
 
 Viacheslav Tykhanovskyi, `vti@cpan.org`.
