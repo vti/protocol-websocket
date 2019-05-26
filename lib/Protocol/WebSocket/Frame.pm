@@ -84,7 +84,11 @@ sub next {
     my $bytes = $self->next_bytes;
     return unless defined $bytes;
 
-    return Encode::decode('UTF-8', $bytes);
+    if ($self->is_text) {
+      return Encode::decode('UTF-8', $bytes);
+    } else {
+      return $bytes;
+    }
 }
 
 sub fin {

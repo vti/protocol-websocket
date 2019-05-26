@@ -8,6 +8,8 @@ use Protocol::WebSocket::URL;
 use Protocol::WebSocket::Handshake::Client;
 use Protocol::WebSocket::Frame;
 
+use Encode ();
+
 sub new {
     my $class = shift;
     $class = ref $class if ref $class;
@@ -103,9 +105,15 @@ sub read {
         while (defined (my $bytes = $frame_buffer->next)) {
             if ($frame_buffer->is_close) {
                 # Remote WebSocket close (TCP socket may stay open for a bit)
-                $self->disconnect if ($self->is_ready);
-                # TODO: see message in disconnect() about error code / reason
-                $self->{on_eof}->($self) if $self->{on_eof};
+                #  Decode the error code and message, if it exists
+                my $code = length $bytes > 1 ? unpack('n', substr($bytes, 0, 2)) : undef;
+                my $message = length $bytes > 3 ? Encode::decode('UTF-8', substr($bytes, 2)) : undef;
+
+                #  Spec says to send our own close frame (and echo the errno.)
+                $self->disconnect($code) if ($self->is_ready);
+
+                # Call user callback
+                $self->{on_eof}->($self, $code, $message) if $self->{on_eof};
             } elsif ($frame_buffer->is_pong) {
                 # Server responded to our ping.
                 $self->{on_pong}->($self, $bytes) if $self->{on_pong};
@@ -162,11 +170,13 @@ sub connect {
 #  also sets state to -1 when called
 sub disconnect {
     my $self = shift;
+    my ($code, $message) = @_;
 
-    # TODO: Spec states 'close' messages may contain a uint16 error code, and a utf-8 reason.
-    #  Clients are supposed to echo back the error code when receiving close from server.
-    # For now, we just send an empty message.
-    $self->write( $self->_build_frame(type => 'close', masked => 1) );
+    my $buffer;
+    if (defined $code) { $buffer = pack 'n', $code }
+    if (defined $message) { $buffer .= Encode::encode('UTF-8', $message) }
+
+    $self->write( $self->_build_frame(type => 'close', masked => 1, buffer => $buffer) );
 
     $self->{state} = -1;
 
