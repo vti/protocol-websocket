@@ -84,7 +84,7 @@ sub next {
     my $bytes = $self->next_bytes;
     return unless defined $bytes;
 
-    if ($self->is_text) {
+    if ($self->{version} eq 'draft-ietf-hybi-00' || $self->is_text) {
       return Encode::decode('UTF-8', $bytes);
     } else {
       return $bytes;
