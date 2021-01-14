@@ -19,7 +19,7 @@ $h->req->challenge("Tm[K T2u");
 $h->req->cookies('foo=bar; alice=bob');
 
 is $h->to_string => "GET /demo HTTP/1.1\x0d\x0a"
-  . "Upgrade: WebSocket\x0d\x0a"
+  . "Upgrade: websocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: example.com\x0d\x0a"
   . "Cookie: foo=bar; alice=bob\x0d\x0a"
@@ -40,7 +40,7 @@ $h->req->key2("1_ tx7X d  <  nw  334J702) 7]o}` 0");
 $h->req->challenge("Tm[K T2u");
 
 is $h->to_string => "GET / HTTP/1.1\x0d\x0a"
-  . "Upgrade: WebSocket\x0d\x0a"
+  . "Upgrade: websocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: example.com\x0d\x0a"
   . "Origin: http://example.com\x0d\x0a"
@@ -54,7 +54,7 @@ ok $h->parse;
 ok $h->parse('');
 
 ok $h->parse("HTTP/1.1 101 WebSocket Protocol Handshake\x0d\x0a"
-      . "Upgrade: WebSocket\x0d\x0a"
+      . "Upgrade: websocket\x0d\x0a"
       . "Connection: Upgrade\x0d\x0a"
       . "Sec-WebSocket-Origin: http://example.com\x0d\x0a"
       . "Sec-WebSocket-Location: ws://example.com/demo\x0d\x0a"

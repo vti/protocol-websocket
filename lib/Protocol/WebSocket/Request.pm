@@ -131,7 +131,7 @@ sub to_string {
       unless defined $self->resource_name;
     $string .= "GET " . $self->resource_name . " HTTP/1.1\x0d\x0a";
 
-    $string .= "Upgrade: WebSocket\x0d\x0a";
+    $string .= "Upgrade: websocket\x0d\x0a";
     $string .= "Connection: Upgrade\x0d\x0a";
 
     Carp::croak(qq/Host is required/) unless defined $self->host;
@@ -398,7 +398,7 @@ sub _generate_challenge {
 sub _finalize {
     my $self = shift;
 
-    return unless $self->upgrade && lc $self->upgrade eq 'websocket';
+    return unless $self->upgrade && lc($self->upgrade) eq 'websocket';
 
     my $connection = $self->connection;
     return unless $connection;

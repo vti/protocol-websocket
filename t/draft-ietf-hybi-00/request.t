@@ -17,7 +17,7 @@ ok $req->parse('');
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
 is $req->state => 'fields';
 
-ok $req->parse("Upgrade: WebSocket\x0d\x0a");
+ok $req->parse("Upgrade: websocket\x0d\x0a");
 is $req->state => 'fields';
 ok $req->parse("Connection: Upgrade\x0d\x0a");
 is $req->state => 'fields';
@@ -47,7 +47,7 @@ is $req->cookies->to_string => 'foo=bar; alice=bob';
 
 $req = Protocol::WebSocket::Request->new;
 $req->parse("GET /demo HTTP/1.1\x0d\x0a");
-$req->parse("Upgrade: WebSocket\x0d\x0a");
+$req->parse("Upgrade: websocket\x0d\x0a");
 $req->parse("Connection: Upgrade\x0d\x0a");
 $req->parse("Host: example.com\x0d\x0a");
 $req->parse("Origin: http://example.com\x0d\x0a");
@@ -61,7 +61,7 @@ is $req->version, 'draft-ietf-hybi-00';
 
 $req = Protocol::WebSocket::Request->new;
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
-ok $req->parse("Upgrade: WebSocket\x0d\x0a");
+ok $req->parse("Upgrade: websocket\x0d\x0a");
 ok $req->parse("Connection: Upgrade\x0d\x0a");
 ok $req->parse("Host: example.com\x0d\x0a");
 ok $req->parse("Origin: http://example.com\x0d\x0a");
@@ -84,7 +84,7 @@ $req = Protocol::WebSocket::Request->new(
     challenge     => 'Tm[K T2u'
 );
 is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
-  . "Upgrade: WebSocket\x0d\x0a"
+  . "Upgrade: websocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: example.com\x0d\x0a"
   . "Cookie: foo=bar; alice=bob\x0d\x0a"
@@ -106,7 +106,7 @@ $req = Protocol::WebSocket::Request->new(
     challenge     => 'Tm[K T2u'
 );
 is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
-  . "Upgrade: WebSocket\x0d\x0a"
+  . "Upgrade: websocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: example.com\x0d\x0a"
   . "Origin: http://example.com\x0d\x0a"

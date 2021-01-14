@@ -19,7 +19,7 @@ ok $req->parse('');
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
 is $req->state => 'fields';
 
-ok $req->parse("Upgrade: WebSocket\x0d\x0a");
+ok $req->parse("Upgrade: websocket\x0d\x0a");
 is $req->state => 'fields';
 ok $req->parse("Connection: Upgrade\x0d\x0a");
 is $req->state => 'fields';
@@ -40,7 +40,7 @@ is $req->origin             => 'http://example.com';
 
 $req = Protocol::WebSocket::Request->new;
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
-ok $req->parse("Upgrade: WebSocket\x0d\x0a");
+ok $req->parse("Upgrade: websocket\x0d\x0a");
 ok $req->parse("Connection: Upgrade\x0d\x0a");
 ok $req->parse("Host: example.com:3000\x0d\x0a");
 ok $req->parse("Origin: null\x0d\x0a");
@@ -60,7 +60,7 @@ is $req->state   => 'done';
 
 $req = Protocol::WebSocket::Request->new;
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
-ok $req->parse("Upgrade: WebSocket\x0d\x0a");
+ok $req->parse("Upgrade: websocket\x0d\x0a");
 ok $req->parse("Connection: Upgrade\x0d\x0a");
 ok $req->parse("Host: example.com:3000\x0d\x0a");
 ok $req->parse("Origin: null\x0d\x0a");
@@ -73,7 +73,7 @@ is $req->subprotocol => 'sample';
 $req = Protocol::WebSocket::Request->new;
 $message =
     "GET /demo HTTP/1.1\x0d\x0a"
-  . "Upgrade: WebSocket\x0d\x0a"
+  . "Upgrade: websocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a";
 ok $req->parse($message);
 is $message => '';
@@ -86,7 +86,7 @@ ok $req->is_done;
 
 $req = Protocol::WebSocket::Request->new;
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
-ok $req->parse("Upgrade: WebSocket\x0d\x0a");
+ok $req->parse("Upgrade: websocket\x0d\x0a");
 ok $req->parse("Connection: Upgrade\x0d\x0a");
 ok $req->parse("Host: example.com\x0d\x0a");
 ok $req->parse("Origin: null\x0d\x0a");
@@ -103,7 +103,7 @@ is $req->cookies->pairs->[2][1] => '/';
 
 $req = Protocol::WebSocket::Request->new;
 $req->parse("GET /demo HTTP/1.1\x0d\x0a");
-$req->parse("Upgrade: WebSocket\x0d\x0a");
+$req->parse("Upgrade: websocket\x0d\x0a");
 $req->parse("Connection: Upgrade\x0d\x0a");
 $req->parse("Host: example.com\x0d\x0a");
 $req->parse("Origin: null\x0d\x0a");
@@ -114,7 +114,7 @@ ok $req->secure;
 
 $req = Protocol::WebSocket::Request->new;
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
-ok $req->parse("Upgrade: WebSocket\x0d\x0a");
+ok $req->parse("Upgrade: websocket\x0d\x0a");
 ok $req->parse("Connection: Upgrade\x0d\x0a");
 ok $req->parse("Host: example.com\x0d\x0a");
 ok $req->parse("Origin: https://example.com\x0d\x0a");
@@ -129,7 +129,7 @@ $req = Protocol::WebSocket::Request->new(
     resource_name => '/demo'
 );
 is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
-  . "Upgrade: WebSocket\x0d\x0a"
+  . "Upgrade: websocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: example.com\x0d\x0a"
   . "Cookie: foo=bar; alice=bob\x0d\x0a"
@@ -143,7 +143,7 @@ $req = Protocol::WebSocket::Request->new(
     resource_name => '/demo'
 );
 is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
-  . "Upgrade: WebSocket\x0d\x0a"
+  . "Upgrade: websocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: example.com\x0d\x0a"
   . "Origin: http://example.com\x0d\x0a"
@@ -156,7 +156,7 @@ $req = Protocol::WebSocket::Request->new(
     resource_name => '/demo'
 );
 is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
-  . "Upgrade: WebSocket\x0d\x0a"
+  . "Upgrade: websocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: example.com\x0d\x0a"
   . "Origin: http://example.com\x0d\x0a"
@@ -169,7 +169,7 @@ $req = Protocol::WebSocket::Request->new(
     resource_name => '/demo'
 );
 is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
-  . "Upgrade: WebSocket\x0d\x0a"
+  . "Upgrade: websocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: example.com\x0d\x0a"
   . "Origin: https://example.com\x0d\x0a"
@@ -177,7 +177,7 @@ is $req->to_string => "GET /demo HTTP/1.1\x0d\x0a"
 
 $req = Protocol::WebSocket::Request->new;
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
-ok $req->parse("Upgrade: WebSocket\x0d\x0a");
+ok $req->parse("Upgrade: websocket\x0d\x0a");
 ok $req->parse("Connection: Bar\x0d\x0a");
 ok $req->parse("Host: example.com\x0d\x0a");
 ok $req->parse("Origin: http://example.com\x0d\x0a");
@@ -187,7 +187,7 @@ is $req->error => 'Not a valid request';
 
 $req = Protocol::WebSocket::Request->new;
 ok $req->parse("GET /demo HTTP/1.1\x0d\x0a");
-ok $req->parse("Upgrade: WebSocket\x0d\x0a");
+ok $req->parse("Upgrade: websocket\x0d\x0a");
 ok $req->parse("Connection: Upgrade\x0d\x0a");
 ok $req->parse("Host: example.com\x0d\x0a");
 ok $req->parse("Origin: http://example.com\x0d\x0a");

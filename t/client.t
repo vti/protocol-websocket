@@ -17,7 +17,7 @@ subtest 'write handshake on connect' => sub {
 
     $client->connect;
 
-    like $written, qr/Upgrade: WebSocket/;
+    like $written, qr/Upgrade: websocket/;
 };
 
 subtest 'call on_connect on connect' => sub {

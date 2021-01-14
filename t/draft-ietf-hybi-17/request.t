@@ -84,7 +84,7 @@ $req = Protocol::WebSocket::Request->new(
     key           => 'dGhlIHNhbXBsZSBub25jZQ=='
 );
 is $req->to_string => "GET /chat HTTP/1.1\x0d\x0a"
-  . "Upgrade: WebSocket\x0d\x0a"
+  . "Upgrade: websocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: server.example.com\x0d\x0a"
   . "Cookie: foo=bar; alice=bob\x0d\x0a"
@@ -103,7 +103,7 @@ subtest 'add custom headers' => sub {
         headers => ['X-Foo' => 'bar']
     );
     is $req->to_string => "GET /chat HTTP/1.1\x0d\x0a"
-      . "Upgrade: WebSocket\x0d\x0a"
+      . "Upgrade: websocket\x0d\x0a"
       . "Connection: Upgrade\x0d\x0a"
       . "Host: server.example.com\x0d\x0a"
       . "Origin: http://example.com\x0d\x0a"
@@ -113,7 +113,7 @@ subtest 'add custom headers' => sub {
       . "\x0d\x0a";
 
     is $req->to_string => "GET /chat HTTP/1.1\x0d\x0a"
-      . "Upgrade: WebSocket\x0d\x0a"
+      . "Upgrade: websocket\x0d\x0a"
       . "Connection: Upgrade\x0d\x0a"
       . "Host: server.example.com\x0d\x0a"
       . "Origin: http://example.com\x0d\x0a"

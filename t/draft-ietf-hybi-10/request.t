@@ -69,7 +69,7 @@ $req = Protocol::WebSocket::Request->new(
     key           => 'dGhlIHNhbXBsZSBub25jZQ=='
 );
 is $req->to_string => "GET /chat HTTP/1.1\x0d\x0a"
-  . "Upgrade: WebSocket\x0d\x0a"
+  . "Upgrade: websocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: server.example.com\x0d\x0a"
   . "Cookie: foo=bar; alice=bob\x0d\x0a"

@@ -15,7 +15,7 @@ $h->req->key("dGhlIHNhbXBsZSBub25jZQ==");
 $h->req->cookies('foo=bar; alice=bob');
 
 is $h->to_string => "GET /demo HTTP/1.1\x0d\x0a"
-  . "Upgrade: WebSocket\x0d\x0a"
+  . "Upgrade: websocket\x0d\x0a"
   . "Connection: Upgrade\x0d\x0a"
   . "Host: example.com\x0d\x0a"
   . "Cookie: foo=bar; alice=bob\x0d\x0a"
